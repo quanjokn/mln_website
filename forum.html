@@ -55,7 +55,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="quizz.html">
+              <a class="nav-link" href="login.html">
                 <i class="bi bi-question-circle me-1"></i>Kiểm tra
               </a>
             </li>
@@ -417,9 +417,9 @@
           </div>
           <div class="modal-body text-center py-4">
             <p class="mb-4">Đăng nhập để tham gia thảo luận cùng cộng đồng</p>
-            <button class="btn btn-danger btn-lg" onclick="signInWithGoogle()">
+            <a href="login.html" class="btn btn-danger btn-lg">
               <i class="bi bi-google me-2"></i>Đăng nhập với Google
-            </button>
+            </a>
             <p class="mt-3 small text-muted">
               Bằng việc đăng nhập, bạn đồng ý tuân thủ quy tắc diễn đàn
             </p>
@@ -492,7 +492,7 @@
                 </a>
               </li>
               <li class="mb-2">
-                <a href="quizz.html" class="text-light text-decoration-none">
+                <a href="login.html" class="text-light text-decoration-none">
                   <i class="bi bi-question-circle me-1"></i>Bài kiểm tra
                 </a>
               </li>
@@ -574,10 +574,11 @@
     <!-- AOS Animation -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-    <!-- Firebase Authentication -->
-    <script type="module" src="auth.js"></script>
-    <!-- Firebase v9 SDK -->
-    <script type="module" src="forum.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <!-- Forum Script -->
+    <script src="forum.js"></script>
 
     <script>
       // Initialize AOS

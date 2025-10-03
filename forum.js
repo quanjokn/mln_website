@@ -1,34 +1,4 @@
-// forum.js - Firebase Forum Logic
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-  getDatabase, 
-  ref, 
-  push, 
-  set, 
-  onValue, 
-  off,
-  serverTimestamp,
-  query,
-  orderByChild,
-  limitToLast
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-// Firebase Configuration - Same as auth.js
-const firebaseConfig = {
-   apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
-  authDomain: "mln111-cff07.firebaseapp.com",
-  databaseURL: "https://mln111-cff07-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "mln111-cff07",
-  storageBucket: "mln111-cff07.firebasestorage.app",
-  messagingSenderId: "25534326749",
-  appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
-  measurementId: "G-5ZP1K3NQN3"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
+// forum.js - Forum Logic with Google OAuth
 // Global variables
 let currentUser = null;
 let allTopics = [];
@@ -74,6 +44,46 @@ const CATEGORIES = {
   }
 };
 
+// Sample data for demo (replace with real database later)
+const SAMPLE_TOPICS = [
+  {
+    id: '1',
+    title: 'Tư tưởng yêu nước trong thời đại mới',
+    content: 'Làm thế nào để áp dụng tư tưởng yêu nước của Bác Hồ vào cuộc sống hiện đại? Tôi muốn thảo luận về vấn đề này với mọi người.',
+    category: 'tu-tuong-yeu-nuoc',
+    authorName: 'Nguyễn Văn A',
+    authorPhoto: 'https://via.placeholder.com/40',
+    timestamp: Date.now() - 3600000,
+    replyCount: 3,
+    viewCount: 15,
+    pinned: false
+  },
+  {
+    id: '2',
+    title: 'Đạo đức cách mạng và đạo đức công dân',
+    content: 'Bác Hồ đã dạy: "Đạo đức là gốc, tài năng là ngọn". Làm thế nào để rèn luyện đạo đức cách mạng trong thời đại ngày nay?',
+    category: 'dao-duc-hcm',
+    authorName: 'Trần Thị B',
+    authorPhoto: 'https://via.placeholder.com/40',
+    timestamp: Date.now() - 7200000,
+    replyCount: 5,
+    viewCount: 28,
+    pinned: true
+  },
+  {
+    id: '3',
+    title: 'Ứng dụng tư tưởng HCM trong giáo dục',
+    content: 'Tư tưởng Hồ Chí Minh về giáo dục có ý nghĩa gì đối với việc đổi mới giáo dục hiện nay?',
+    category: 'ung-dung-thuc-te',
+    authorName: 'Lê Văn C',
+    authorPhoto: 'https://via.placeholder.com/40',
+    timestamp: Date.now() - 10800000,
+    replyCount: 2,
+    viewCount: 12,
+    pinned: false
+  }
+];
+
 // Initialize forum when page loads
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 Forum initializing...');
@@ -98,80 +108,53 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // Test database connection
-  console.log('🔗 Testing database connection...');
-  const testRef = ref(database, '.info/connected');
-  onValue(testRef, (snapshot) => {
-    if (snapshot.val() === true) {
-      console.log('✅ Database connected successfully');
-      
-      // Check if database has data
-      const topicsRef = ref(database, 'topics');
-      onValue(topicsRef, (snapshot) => {
-        if (!snapshot.exists()) {
-          console.log('⚠️ No topics found in database');
-          showImportDataSuggestion();
-        }
-      }, { onlyOnce: true });
-      
-    } else {
-      console.log('❌ Database disconnected');
-    }
-  });
+  // Check authentication state
+  checkAuthState();
   
-  // Initialize authentication system
-  const cleanup = initAuth({
-    onAuthSuccess: (user) => {
-      currentUser = user;
-      console.log('✅ User authenticated:', user.displayName);
-      updateAuthUI(user);
-      updateUserStats(user);
-      loadForumStats();
-    },
-    onAuthFailure: () => {
-      currentUser = null;
-      console.log('ℹ️ No user authenticated');
-      updateAuthUI(null);
-      loadForumStats();
-    },
-    requireAuth: false, // Forum doesn't require auth to view
-    showUserInfo: true
-  });
-
   // Load initial data
   loadCategories();
   loadTopics();
 });
 
-// Show suggestion to import sample data
-function showImportDataSuggestion() {
-  const container = document.getElementById('topicsContainer');
-  if (container) {
-    container.innerHTML = `
-      <div class="text-center py-5">
-        <i class="bi bi-database text-warning" style="font-size: 3rem;"></i>
-        <h5 class="mt-3 text-warning">Database trống</h5>
-        <p class="text-muted">Chưa có dữ liệu trong database. Hãy import sample data để test!</p>
-        <div class="mt-3">
-          <button class="btn btn-primary me-2" onclick="window.open('https://console.firebase.google.com', '_blank')">
-            <i class="bi bi-box-arrow-up-right me-1"></i>Mở Firebase Console
-          </button>
-          <button class="btn btn-outline-primary" onclick="location.reload()">
-            <i class="bi bi-arrow-clockwise me-1"></i>Thử lại
-          </button>
-        </div>
-        <div class="mt-3">
-          <small class="text-muted">
-            Import file <code>firebase-sample-data.json</code> vào Realtime Database
-          </small>
-        </div>
-      </div>
-    `;
+// Check authentication state from localStorage
+function checkAuthState() {
+  const userProfile = localStorage.getItem('userProfile');
+  if (userProfile) {
+    try {
+      const profile = JSON.parse(userProfile);
+      currentUser = {
+        uid: profile.sub,
+        displayName: profile.name,
+        email: profile.email,
+        photoURL: profile.picture
+      };
+      console.log('✅ User authenticated:', profile.name);
+      updateAuthUI(currentUser);
+    } catch (error) {
+      console.error('❌ Error parsing user profile:', error);
+      localStorage.removeItem('userProfile');
+      currentUser = null;
+      updateAuthUI(null);
+    }
+  } else {
+    currentUser = null;
+    console.log('ℹ️ No user authenticated');
+    updateAuthUI(null);
   }
+  
+  // Update online count after auth state changes
+  loadForumStats();
 }
 
-// Authentication Functions - Now using auth.js
-// signInWithGoogle and signOutUser are now provided by auth.js
+// Authentication Functions
+window.signOutUser = function() {
+  localStorage.removeItem('userProfile');
+  currentUser = null;
+  updateAuthUI(null);
+  showNotification('Đã đăng xuất thành công!', 'info');
+  // Reload page to refresh data
+  location.reload();
+};
 
 function updateAuthUI(user) {
   const authSection = document.getElementById('userAuthSection');
@@ -236,81 +219,17 @@ function loadCategories() {
 
 // Topics Functions
 function loadTopics() {
-  console.log('📥 Loading topics from Firebase...');
-  const topicsRef = ref(database, 'topics');
-  const topicsQuery = query(topicsRef, orderByChild('timestamp'));
+  console.log('📥 Loading topics...');
   
-  onValue(topicsQuery, (snapshot) => {
-    console.log('📊 Topics snapshot received:', snapshot.exists());
-    const topics = snapshot.val();
-    console.log('📋 Raw topics data:', topics);
-    
-    allTopics = topics ? Object.keys(topics).map(key => ({
-      id: key,
-      ...topics[key]
-    })).reverse() : []; // Reverse to show newest first
-    
-    console.log(`✅ Loaded ${allTopics.length} topics`);
-    
-    // Sync reply counts for all topics
-    syncAllReplyCounts().then(() => {
-      displayTopics(allTopics);
-      updateCategoryCounts();
-      loadForumStats(); // Update stats after loading topics
-    });
-    
-  }, (error) => {
-    console.error('❌ Error loading topics:', error);
-    const container = document.getElementById('topicsContainer');
-    if (container) {
-      container.innerHTML = `
-        <div class="text-center py-5">
-          <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
-          <h5 class="mt-3 text-danger">Lỗi tải dữ liệu</h5>
-          <p class="text-muted">Error: ${error.message}</p>
-          <button class="btn btn-primary mt-3" onclick="location.reload()">
-            <i class="bi bi-arrow-clockwise me-1"></i>Thử lại
-          </button>
-        </div>
-      `;
-    }
-  });
-}
-
-// Sync reply counts for all topics
-async function syncAllReplyCounts() {
-  console.log('🔄 Syncing reply counts for all topics...');
+  // For demo, use sample data
+  // In real implementation, this would load from a database
+  allTopics = [...SAMPLE_TOPICS];
   
-  const syncPromises = allTopics.map(async (topic) => {
-    try {
-      const repliesRef = ref(database, `replies/${topic.id}`);
-      const snapshot = await new Promise((resolve, reject) => {
-        onValue(repliesRef, resolve, reject, { onlyOnce: true });
-      });
-      
-      const replies = snapshot.val();
-      const actualReplyCount = replies ? Object.keys(replies).length : 0;
-      
-      // Update local data
-      const topicIndex = allTopics.findIndex(t => t.id === topic.id);
-      if (topicIndex !== -1) {
-        allTopics[topicIndex].replyCount = actualReplyCount;
-      }
-      
-      // Update in Firebase if different
-      if (topic.replyCount !== actualReplyCount) {
-        const topicRef = ref(database, `topics/${topic.id}/replyCount`);
-        await set(topicRef, actualReplyCount);
-        console.log(`✅ Synced reply count for "${topic.title}": ${actualReplyCount}`);
-      }
-      
-    } catch (error) {
-      console.error(`❌ Error syncing replies for topic ${topic.id}:`, error);
-    }
-  });
+  console.log(`✅ Loaded ${allTopics.length} topics`);
   
-  await Promise.all(syncPromises);
-  console.log('✅ All reply counts synced');
+  displayTopics(allTopics);
+  updateCategoryCounts();
+  loadForumStats();
 }
 
 function displayTopics(topics) {
@@ -396,10 +315,14 @@ function displayTopics(topics) {
 
 // Create Topic Functions
 window.showCreateTopicModal = function() {
-  requireAuth(() => {
-    const modal = new bootstrap.Modal(document.getElementById('createTopicModal'));
-    modal.show();
-  });
+  if (!currentUser) {
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    loginModal.show();
+    return;
+  }
+  
+  const modal = new bootstrap.Modal(document.getElementById('createTopicModal'));
+  modal.show();
 };
 
 window.createTopic = function() {
@@ -418,37 +341,34 @@ window.createTopic = function() {
     return;
   }
   
-  const topicsRef = ref(database, 'topics');
-  const newTopicRef = push(topicsRef);
-  
-  const topicData = {
+  // Create new topic object
+  const newTopic = {
+    id: Date.now().toString(),
     title: title,
     content: content,
     category: category,
-    authorId: currentUser.uid,
     authorName: currentUser.displayName,
     authorPhoto: currentUser.photoURL,
-    timestamp: serverTimestamp(),
+    timestamp: Date.now(),
     pinned: pinned,
     replyCount: 0,
-    viewCount: 0,
-    lastActivity: serverTimestamp()
+    viewCount: 0
   };
   
-  set(newTopicRef, topicData)
-    .then(() => {
-      console.log('✅ Topic created successfully');
-      showNotification('Chủ đề đã được tạo thành công!', 'success');
-      
-      // Close modal and reset form
-      const modal = bootstrap.Modal.getInstance(document.getElementById('createTopicModal'));
-      modal.hide();
-      document.getElementById('createTopicForm').reset();
-    })
-    .catch((error) => {
-      console.error('❌ Error creating topic:', error);
-      showNotification('Có lỗi xảy ra khi tạo chủ đề!', 'error');
-    });
+  // Add to topics array
+  allTopics.unshift(newTopic);
+  
+  // Update display
+  displayTopics(allTopics);
+  updateCategoryCounts();
+  loadForumStats();
+  
+  // Close modal and reset form
+  const modal = bootstrap.Modal.getInstance(document.getElementById('createTopicModal'));
+  modal.hide();
+  document.getElementById('createTopicForm').reset();
+  
+  showNotification('Chủ đề đã được tạo thành công!', 'success');
 };
 
 // Topic Detail Functions
@@ -457,8 +377,7 @@ window.openTopicDetail = function(topicId) {
   if (!topic) return;
   
   // Update view count
-  const topicRef = ref(database, `topics/${topicId}/viewCount`);
-  set(topicRef, (topic.viewCount || 0) + 1);
+  topic.viewCount = (topic.viewCount || 0) + 1;
   
   // Show modal
   const modal = new bootstrap.Modal(document.getElementById('topicDetailModal'));
@@ -536,48 +455,36 @@ function loadTopicDetail(topicId) {
     `;
   }
   
-  // Load replies
+  // Load replies (demo data)
   loadReplies(topicId);
 }
 
 function loadReplies(topicId) {
-  const repliesRef = ref(database, `replies/${topicId}`);
+  // Demo replies data
+  const demoReplies = [
+    {
+      id: '1',
+      content: 'Cảm ơn bạn đã chia sẻ. Tôi cũng có cùng quan điểm về vấn đề này.',
+      authorName: 'Phạm Văn D',
+      authorPhoto: 'https://via.placeholder.com/32',
+      timestamp: Date.now() - 1800000
+    },
+    {
+      id: '2',
+      content: 'Rất hay! Tôi muốn tìm hiểu thêm về chủ đề này.',
+      authorName: 'Hoàng Thị E',
+      authorPhoto: 'https://via.placeholder.com/32',
+      timestamp: Date.now() - 900000
+    }
+  ];
   
-  onValue(repliesRef, (snapshot) => {
-    const replies = snapshot.val();
-    const repliesArray = replies ? Object.keys(replies).map(key => ({
-      id: key,
-      ...replies[key]
-    })).sort((a, b) => a.timestamp - b.timestamp) : [];
-    
-    console.log(`📝 Loaded ${repliesArray.length} replies for topic ${topicId}`);
-    
-    displayReplies(repliesArray);
-    
-    // Update reply count in UI
-    const replyCountEl = document.getElementById('replyCount');
-    if (replyCountEl) {
-      replyCountEl.textContent = repliesArray.length;
-    }
-    
-    // Update reply count in database and local data
-    const actualReplyCount = repliesArray.length;
-    const topicIndex = allTopics.findIndex(t => t.id === topicId);
-    if (topicIndex !== -1) {
-      allTopics[topicIndex].replyCount = actualReplyCount;
-      
-      // Update in Firebase
-      const topicRef = ref(database, `topics/${topicId}/replyCount`);
-      set(topicRef, actualReplyCount).then(() => {
-        console.log(`✅ Updated reply count for topic ${topicId}: ${actualReplyCount}`);
-        // Refresh the main topics display to show updated count
-        displayTopics(allTopics);
-        loadForumStats();
-      }).catch(error => {
-        console.error('❌ Error updating reply count:', error);
-      });
-    }
-  });
+  displayReplies(demoReplies);
+  
+  // Update reply count
+  const replyCountEl = document.getElementById('replyCount');
+  if (replyCountEl) {
+    replyCountEl.textContent = demoReplies.length;
+  }
 }
 
 function displayReplies(replies) {
@@ -618,12 +525,6 @@ function displayReplies(replies) {
 }
 
 window.addReply = function(topicId) {
-  requireAuth(() => {
-    addReplyToTopic(topicId);
-  });
-};
-
-function addReplyToTopic(topicId) {
   if (!currentUser) {
     showNotification('Vui lòng đăng nhập để phản hồi!', 'error');
     return;
@@ -635,35 +536,28 @@ function addReplyToTopic(topicId) {
     return;
   }
   
-  const repliesRef = ref(database, `replies/${topicId}`);
-  const newReplyRef = push(repliesRef);
-  
-  const replyData = {
+  // Create new reply
+  const newReply = {
+    id: Date.now().toString(),
     content: content,
-    authorId: currentUser.uid,
     authorName: currentUser.displayName,
     authorPhoto: currentUser.photoURL,
-    timestamp: serverTimestamp()
+    timestamp: Date.now()
   };
   
-  set(newReplyRef, replyData)
-    .then(() => {
-      console.log('✅ Reply added successfully');
-      
-      // Update last activity for topic
-      const topicRef = ref(database, `topics/${topicId}/lastActivity`);
-      set(topicRef, serverTimestamp());
-      
-      // Clear form
-      document.getElementById('replyContent').value = '';
-      showNotification('Phản hồi đã được gửi!', 'success');
-      
-      // Reply count will be automatically updated by loadReplies listener
-    })
-    .catch((error) => {
-      console.error('❌ Error adding reply:', error);
-      showNotification('Có lỗi xảy ra khi gửi phản hồi!', 'error');
-    });
+  // Add to replies (in real implementation, this would save to database)
+  const topic = allTopics.find(t => t.id === topicId);
+  if (topic) {
+    topic.replyCount = (topic.replyCount || 0) + 1;
+  }
+  
+  // Clear form
+  document.getElementById('replyContent').value = '';
+  
+  // Reload replies
+  loadReplies(topicId);
+  
+  showNotification('Phản hồi đã được gửi!', 'success');
 };
 
 // Filter and Search Functions
@@ -762,7 +656,7 @@ function loadForumStats() {
   
   const topicsCount = allTopics.length;
   const repliesCount = allTopics.reduce((sum, topic) => sum + (topic.replyCount || 0), 0);
-  const usersCount = new Set(allTopics.map(topic => topic.authorId)).size;
+  const usersCount = new Set(allTopics.map(topic => topic.authorName)).size;
   const onlineCount = currentUser ? 1 : 0;
   
   console.log('Stats:', { topicsCount, repliesCount, usersCount, onlineCount });
@@ -770,29 +664,21 @@ function loadForumStats() {
   if (totalTopicsEl) {
     totalTopicsEl.textContent = topicsCount;
     console.log('✅ Updated total topics:', topicsCount);
-  } else {
-    console.log('❌ totalTopics element not found');
   }
   
   if (totalRepliesEl) {
     totalRepliesEl.textContent = repliesCount;
     console.log('✅ Updated total replies:', repliesCount);
-  } else {
-    console.log('❌ totalReplies element not found');
   }
   
   if (totalUsersEl) {
     totalUsersEl.textContent = usersCount;
     console.log('✅ Updated total users:', usersCount);
-  } else {
-    console.log('❌ totalUsers element not found');
   }
   
   if (onlineUsersEl) {
     onlineUsersEl.textContent = onlineCount;
     console.log('✅ Updated online users:', onlineCount);
-  } else {
-    console.log('❌ onlineUsers element not found');
   }
 }
 
@@ -806,27 +692,16 @@ function updateCategoryCounts() {
   });
 }
 
-function updateUserStats(user) {
-  // Update user statistics in database
-  const userRef = ref(database, `users/${user.uid}`);
-  set(userRef, {
-    displayName: user.displayName,
-    email: user.email,
-    photoURL: user.photoURL,
-    lastSeen: serverTimestamp()
-  });
-}
-
 // Export functions for global access
 window.forumFunctions = {
+  signOutUser,
   showCreateTopicModal,
   createTopic,
   openTopicDetail,
   addReply,
   filterByCategory,
   showAllTopics,
-  searchTopics,
-  initAuth  
+  searchTopics
 };
 
 // Ensure functions are globally accessible
@@ -837,6 +712,6 @@ window.addReply = window.addReply;
 window.filterByCategory = window.filterByCategory;
 window.showAllTopics = window.showAllTopics;
 window.searchTopics = window.searchTopics;
-window.initAuth = window.initAuth;
+window.signOutUser = window.signOutUser;
 
 console.log('✅ All forum functions exported globally');

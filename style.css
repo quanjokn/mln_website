@@ -623,34 +623,6 @@ body::before {
     border-color: var(--classical-light);
 }
 
-/* Enhanced clickable options for quiz */
-.clickable-option {
-    padding: 1rem;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    margin-bottom: 0.5rem;
-    border: 2px solid transparent;
-    cursor: pointer;
-}
-
-.clickable-option:hover {
-    background: rgba(139, 115, 85, 0.15);
-    border-color: var(--classical-light);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
-}
-
-.clickable-option .form-check-label {
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.clickable-option:hover .form-check-label {
-    background: rgba(139, 115, 85, 0.05);
-}
-
 .form-check-input:checked {
     background-color: var(--classical-primary);
     border-color: var(--classical-primary);

@@ -22,11 +22,12 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="pic/favicon.png" />
-    <!-- Firebase Authentication -->
-    <script type="module" src="auth.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <script src="script.js"></script>
     <script src="script-sheet-api.js"></script>
-    <script type="module" src="save-result.js"></script>
+    <script src="save-result.js"></script>
   </head>
 
   <body>
@@ -68,21 +69,17 @@
                 <i class="bi bi-robot"></i>Chat AI
               </a>
             </li>
-            <li class="nav-item">
-              <div class="user-info">
-              </div>
-            </li>
           </ul>
         </div>
       </div>
     </nav>
 
-    <!-- Authentication Required Modal -->
+    <!-- Password Modal -->
     <div
       class="modal fade"
-      id="authModal"
+      id="passwordModal"
       tabindex="-1"
-      aria-labelledby="authModalLabel"
+      aria-labelledby="passwordModalLabel"
       aria-hidden="true"
       data-bs-backdrop="static"
       data-bs-keyboard="false"
@@ -90,25 +87,39 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-classical text-white">
-            <h5 class="modal-title" id="authModalLabel">
-              <i class="bi bi-shield-check me-2"></i>Đăng nhập để kiểm tra
+            <h5 class="modal-title" id="passwordModalLabel">
+              <i class="bi bi-shield-lock me-2"></i>Xác thực truy cập
             </h5>
           </div>
-          <div class="modal-body text-center py-4">
-            <div class="mb-4">
-              <i class="bi bi-person-check text-classical" style="font-size: 4rem"></i>
+          <div class="modal-body">
+            <div class="text-center mb-4">
+              <i class="bi bi-key text-classical" style="font-size: 3rem"></i>
+              <h6 class="mt-2">Nhập mật khẩu để truy cập bài kiểm tra</h6>
             </div>
-            <h5 class="mb-3">Chào mừng đến với bài kiểm tra!</h5>
-            <p class="mb-4">
-              Để tham gia kiểm tra kiến thức về Tư tưởng Hồ Chí Minh, 
-              bạn cần đăng nhập bằng tài khoản Google của mình.
-            </p>
-            <button class="btn btn-danger btn-lg" onclick="signInWithGoogle()">
-              <i class="bi bi-google me-2"></i>Đăng nhập với Google
-            </button>
-            <p class="mt-3 small text-muted">
-              Việc đăng nhập giúp chúng tôi lưu kết quả và theo dõi tiến độ học tập của bạn.
-            </p>
+            <form id="passwordForm">
+              <div class="mb-3">
+                <label for="passwordInput" class="form-label">Mật khẩu:</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="passwordInput"
+                  placeholder="Nhập mật khẩu"
+                  required
+                />
+                <div class="invalid-feedback" id="passwordError">
+                  Mật khẩu không đúng. Vui lòng thử lại.
+                </div>
+              </div>
+              <div class="text-center">
+                <button
+                  type="submit"
+                  class="btn btn-classical"
+                  id="checkPassword"
+                >
+                  <i class="bi bi-unlock me-2"></i>Xác nhận
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -150,14 +161,15 @@
                   id="studentId"
                   placeholder="Nhập mã số sinh viên (ví dụ: SE123456)"
                   required
-                  pattern="^[Ss][a-zA-Z]\d{6}$"
+                  pattern="^(SE|se)\d{6}$"
                 />
                 <div class="invalid-feedback">
-                  Mã số sinh viên không đúng định dạng.
+                  Mã số sinh viên phải có định dạng SE/se + 6 chữ số (ví dụ:
+                  SE123456).
                 </div>
                 <div class="form-text">
                   <i class="bi bi-info-circle me-1"></i>
-                  ví dụ: SE123456, ss789012 
+                  Định dạng: SE hoặc se + 6 chữ số (ví dụ: SE123456, se789012)
                 </div>
               </div>
               <div class="mb-3">
@@ -172,11 +184,8 @@
                 <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
               </div>
               <div class="text-center">
-                <button type="submit" class="btn btn-success me-2">
+                <button type="submit" class="btn btn-success">
                   <i class="bi bi-check-circle me-2"></i>Bắt đầu làm bài
-                </button>
-                <button type="button" class="btn btn-outline-secondary" onclick="clearStudentInfo()">
-                  <i class="bi bi-arrow-clockwise me-2"></i>Làm lại
                 </button>
               </div>
             </form>
@@ -469,9 +478,9 @@
       const QUESTION_TIME_LIMIT = 20;
 
       // Global variables
-      let authModal, studentInfoModal;
+      let passwordModal, studentInfoModal;
 
-      window.authModal = authModal;
+      window.passwordModal = passwordModal;
       window.studentInfoModal = studentInfoModal;
 
       let currentQuestionTimer = null;
@@ -490,134 +499,63 @@
         cleanupModalBackdrops();
 
         // Initialize modals
-        authModal = new bootstrap.Modal(
-          document.getElementById("authModal")
+        passwordModal = new bootstrap.Modal(
+          document.getElementById("passwordModal")
         );
         studentInfoModal = new bootstrap.Modal(
           document.getElementById("studentInfoModal")
         );
 
-        // Initialize authentication system
-        initAuthentication();
+        // Show password modal first
+        passwordModal.show();
 
         // Setup event listeners
         setupEventListeners();
       }
 
-      // Initialize authentication system
-      function initAuthentication() {
-        console.log("🔐 Initializing authentication...");
-        
-        // Initialize auth with callbacks
-        const cleanup = initAuth({
-          onAuthSuccess: (user) => {
-            console.log("✅ User authenticated:", user.displayName);
-            // Close auth modal if open
-            const authModalInstance = bootstrap.Modal.getInstance(document.getElementById("authModal"));
-            if (authModalInstance) {
-              authModalInstance.hide();
-            }
-            
-            // Check if student info already exists
-            const existingStudentInfo = localStorage.getItem("studentInfo");
-            if (!existingStudentInfo) {
-              // Show student info modal only if no student info exists
-              const studentModalInstance = bootstrap.Modal.getInstance(document.getElementById("studentInfoModal"));
-              if (studentModalInstance) {
-                studentModalInstance.show();
-              }
-            } else {
-              console.log("📋 Student info already exists, proceeding to quiz");
-              // Load questions and start quiz directly
-              setTimeout(async () => {
-                await loadQuestionsAndStartQuiz();
-              }, 300);
-            }
-          },
-          onAuthFailure: () => {
-            console.log("❌ Authentication required");
-            // Show auth modal
-            const authModalInstance = bootstrap.Modal.getInstance(document.getElementById("authModal"));
-            if (authModalInstance) {
-              authModalInstance.show();
-            }
-          },
-          requireAuth: true,
-          showUserInfo: true
-        });
-        
-        return cleanup;
-      }
-
-      // Function to clear student info and restart
-      window.clearStudentInfo = function() {
-        console.log("🔄 Clearing student info...");
-        
-        // Clear localStorage
-        localStorage.removeItem("studentInfo");
-        
-        // Clear form fields
-        document.getElementById("studentId").value = "";
-        document.getElementById("studentName").value = "";
-        
-        // Clear student display
-        document.getElementById("studentDisplay").textContent = "";
-        
-        // Reset studentInfo variable
-        studentInfo = null;
-        
-        console.log("✅ Student info cleared");
-      };
-
       // Function to clean up modal backdrops
       function cleanupModalBackdrops() {
-        console.log("🧹 Cleaning up modal backdrops...");
-        
         // Remove any existing modal backdrops
         const existingBackdrops = document.querySelectorAll(".modal-backdrop");
-        console.log(`Found ${existingBackdrops.length} modal backdrops to remove`);
-        existingBackdrops.forEach((backdrop) => {
-          backdrop.remove();
-          console.log("✅ Removed modal backdrop");
-        });
+        existingBackdrops.forEach((backdrop) => backdrop.remove());
 
         // Remove modal-open class from body
         document.body.classList.remove("modal-open");
-        console.log("✅ Removed modal-open class from body");
 
         // Reset body padding and overflow if they were modified
         document.body.style.paddingRight = "";
         document.body.style.overflow = "";
+
+        // Ensure body can scroll
         document.body.style.overflowY = "auto";
         document.body.style.overflowX = "hidden";
-        console.log("✅ Reset body styles");
       }
 
       function setupEventListeners() {
-        // Authentication is now handled by auth.js
-
-        // Student info form
+        // Password form - use new Google Sheets validation
         document
-          .getElementById("studentInfoForm")
-          .addEventListener("submit", handleStudentInfoSubmit);
-
-        // Real-time validation for student ID
-        document
-          .getElementById("studentId")
-          .addEventListener("input", function () {
-            const studentId = this.value.trim();
-            const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
-
-            if (studentId && !studentIdRegex.test(studentId)) {
-              this.classList.add("is-invalid");
-              this.setCustomValidity(
-                "Mã số sinh viên phải có định dạng S/s + chữ cái + 6 chữ số (ví dụ: SE123456, ss789012)"
-              );
-            } else {
-              this.classList.remove("is-invalid");
-              this.setCustomValidity("");
-            }
+          .getElementById("passwordForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            handlePasswordCheck();
           });
+
+      // Student info form
+      document.getElementById('studentInfoForm').addEventListener('submit', handleStudentInfoSubmit);
+      
+      // Real-time validation for student ID
+      document.getElementById('studentId').addEventListener('input', function() {
+        const studentId = this.value.trim();
+        const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
+        
+        if (studentId && !studentIdRegex.test(studentId)) {
+          this.classList.add('is-invalid');
+          this.setCustomValidity('Mã số sinh viên phải bắt đầu bằng \'s\' + chữ cái + 6 chữ số (ví dụ: SE123456)');
+        } else {
+          this.classList.remove('is-invalid');
+          this.setCustomValidity('');
+        }
+      });
 
         // Quiz navigation buttons
         document
@@ -638,26 +576,19 @@
 
       async function handleStudentInfoSubmit(e) {
         e.preventDefault();
-        console.log("🔄 Handling student info submit...");
-        
         const studentId = document.getElementById("studentId").value.trim();
         const studentName = document.getElementById("studentName").value.trim();
-        
-        console.log("Student ID:", studentId);
-        console.log("Student Name:", studentName);
 
-        // Validate student ID format: S/s + letter + 6 digits
-        const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
-        if (!studentIdRegex.test(studentId)) {
-          // Show error message
-          const studentIdInput = document.getElementById("studentId");
-          studentIdInput.classList.add("is-invalid");
-          studentIdInput.setCustomValidity(
-            "Mã số sinh viên phải có định dạng S/s + chữ cái + 6 chữ số (ví dụ: SE123456, ss789012)"
-          );
-          studentIdInput.reportValidity();
-          return;
-        }
+      // Validate student ID format: s + letter + 6 digits
+      const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
+      if (!studentIdRegex.test(studentId)) {
+        // Show error message
+        const studentIdInput = document.getElementById('studentId');
+        studentIdInput.classList.add('is-invalid');
+        studentIdInput.setCustomValidity('Mã số sinh viên phải bắt đầu bằng \'s\' + chữ cái + 6 chữ số (ví dụ: SE123456)');
+        studentIdInput.reportValidity();
+        return;
+      }
 
         // Clear any previous validation errors
         const studentIdInput = document.getElementById("studentId");
@@ -674,8 +605,6 @@
         const startTime = `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
 
         if (studentId && studentName) {
-          console.log("✅ Student info validated, proceeding...");
-          
           // Combine user info from Google Sheets with form data
           studentInfo = {
             id: studentId,
@@ -685,56 +614,13 @@
 
           // Save to localStorage
           localStorage.setItem("studentInfo", JSON.stringify(studentInfo));
-          console.log("💾 Student info saved to localStorage");
 
           // Update display
           document.getElementById(
             "studentDisplay"
           ).textContent = `${studentName} (${studentId})`;
-          console.log("📝 Student display updated");
 
-          // Hide modal using multiple methods to ensure it closes
-          console.log("🚪 Attempting to hide modal...");
-          
-          // Method 1: Use Bootstrap Modal instance
-          const modalInstance = bootstrap.Modal.getInstance(document.getElementById("studentInfoModal"));
-          if (modalInstance) {
-            console.log("✅ Using Bootstrap modal instance to hide");
-            modalInstance.hide();
-          } else {
-            console.log("⚠️ No modal instance found, creating new one");
-            // Create new modal instance and hide
-            const newModalInstance = new bootstrap.Modal(document.getElementById("studentInfoModal"));
-            newModalInstance.hide();
-          }
-          
-          // Method 2: Force hide using DOM manipulation
-          const modalElement = document.getElementById("studentInfoModal");
-          if (modalElement) {
-            console.log("🔧 Applying force hide method");
-            modalElement.classList.remove("show");
-            modalElement.classList.add("hide");
-            modalElement.style.display = "none";
-            modalElement.setAttribute("aria-hidden", "true");
-            modalElement.removeAttribute("aria-modal");
-            modalElement.removeAttribute("role");
-            
-            // Remove modal backdrop
-            const backdrop = document.querySelector(".modal-backdrop");
-            if (backdrop) {
-              backdrop.remove();
-              console.log("✅ Removed modal backdrop");
-            }
-            
-            // Remove modal-open class from body
-            document.body.classList.remove("modal-open");
-            document.body.style.overflow = "";
-            document.body.style.paddingRight = "";
-            
-            console.log("✅ Modal force hidden");
-          } else {
-            console.log("❌ Modal element not found!");
-          }
+          studentInfoModal.hide();
 
           // Clean up modal backdrops after hiding
           setTimeout(() => {
@@ -750,13 +636,9 @@
           }, 1000);
 
           // Load questions from Google Sheets first, then start quiz
-          console.log("⏳ Scheduling quiz start in 300ms...");
           setTimeout(async () => {
-            console.log("🚀 Starting quiz...");
             await loadQuestionsAndStartQuiz();
           }, 300);
-        } else {
-          console.log("❌ Missing student ID or name");
         }
       }
 
@@ -915,23 +797,12 @@
 
         currentQ.options.forEach((option, index) => {
           const div = document.createElement("div");
-          div.className = "form-check option-item mb-3 clickable-option";
-          div.style.cursor = "pointer";
+          div.className = "form-check option-item mb-3";
           div.innerHTML = `
                     <input class="form-check-input" type="radio" name="q${state.currentQuestion}" value="${index}" id="opt${index}">
-                    <label class="form-check-label w-100" for="opt${index}">${option}</label>
+                    <label class="form-check-label" for="opt${index}">${option}</label>
                 `;
           container.appendChild(div);
-
-          // Add click handler for the entire option div
-          div.addEventListener("click", function(e) {
-            // Don't trigger if clicking directly on the radio input
-            if (e.target.type !== 'radio') {
-              const radio = div.querySelector("input");
-              radio.checked = true;
-              radio.dispatchEvent(new Event('change'));
-            }
-          });
 
           // Add click handler
           const radio = div.querySelector("input");
@@ -1461,23 +1332,36 @@
         }, 1000);
       }
 
+      // Check Google login status
+      function checkGoogleLogin() {
+        const userProfile = localStorage.getItem('userProfile');
+        if (!userProfile) {
+          console.log("No Google login found, redirecting to login page");
+          alert("Vui lòng đăng nhập bằng Google trước khi làm bài kiểm tra.");
+          window.location.href = 'login.html';
+          return false;
+        }
+        
+        try {
+          const profile = JSON.parse(userProfile);
+          console.log("Google login found:", profile.name);
+          return true;
+        } catch (error) {
+          console.error("Error parsing user profile:", error);
+          localStorage.removeItem('userProfile');
+          window.location.href = 'login.html';
+          return false;
+        }
+      }
+
       // Initialize when DOM loads
       document.addEventListener("DOMContentLoaded", async function () {
         console.log("DOM loaded, initializing quiz system...");
 
-        // Wait for authentication system to load
-        await new Promise(resolve => {
-          if (typeof initAuth === 'function') {
-            resolve();
-          } else {
-            const checkAuth = setInterval(() => {
-              if (typeof initAuth === 'function') {
-                clearInterval(checkAuth);
-                resolve();
-              }
-            }, 100);
-          }
-        });
+        // Check Google login first
+        if (!checkGoogleLogin()) {
+          return;
+        }
 
         // Check if required functions are loaded
         console.log("Checking loaded functions...");
@@ -1507,9 +1391,13 @@
           }, 1000);
         }
 
-        // Clear all localStorage data when starting
+        // Clear all localStorage data when starting (except userProfile)
+        const userProfile = localStorage.getItem('userProfile');
         localStorage.clear();
-        console.log("Cleared all localStorage data");
+        if (userProfile) {
+          localStorage.setItem('userProfile', userProfile);
+        }
+        console.log("Cleared all localStorage data except userProfile");
 
         // Clean up any existing modal backdrops on page load
         cleanupModalBackdrops();

@@ -1,69 +1,188 @@
-
-// Import auth functions
-import { getCurrentUser } from './auth.js';
-
+// save-result.js - OAuth2 Google Sheets Integration
 const sheetId = "1kx--gwSvckfHcUMxAKcZbfxKhN_Jf7s1tQQECro1-1U";
 const apiKey = "AIzaSyBNi1lEqoeaUoTkWNYg8rqdwcvziJ7ImAw";
-const resultRange = "Result!A:F";
+const resultRange = "Result!A:F"; 
 
-// OAuth 2.0 authentication is handled by auth.js
+// OAuth2 Configuration
+const oauthConfig = {
+    clientId: "118407744836973155611",
+    scope: "https://www.googleapis.com/auth/spreadsheets",
+    redirectUri: window.location.origin + "/oauth-callback.html"
+};
+
+// OAuth2 token management
+let accessToken = null;
+let tokenExpiry = null;
 const resultSheetName = "Result";
 
 /**
- * Wait for auth system to be ready
- * @returns {Promise<void>}
- */
-async function waitForAuthSystem() {
-    // Since getCurrentUser is imported, we just need to check if it returns a user
-    let attempts = 0;
-    const maxAttempts = 50; // 5 seconds max wait
-    
-    while (attempts < maxAttempts) {
-        const user = getCurrentUser();
-        if (user !== null) {
-            console.log("✅ Auth system is ready with user:", user.displayName);
-            return;
-        }
-        
-        console.log(`⏳ Waiting for user authentication... (attempt ${attempts + 1}/${maxAttempts})`);
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-    }
-    
-    // Even if no user is authenticated, the system is ready
-    console.log("✅ Auth system is ready (no user authenticated)");
-}
-
-/**
- * Get OAuth 2.0 access token from current user
+ * Get OAuth2 access token from user's Google account
  * @returns {Promise<string>} Access token
  */
 async function getAccessToken() {
-    // Get current user from auth system
-    const user = getCurrentUser();
-    console.log("Current user in getAccessToken:", user);
-    
-    if (!user) {
-        console.error("❌ No user found in getCurrentUser()");
-        throw new Error("User not authenticated. Please login first.");
+    // Check if we have a valid token
+    if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
+        return accessToken;
     }
 
-    // Get access token from Firebase Auth
     try {
-        console.log("🔄 Getting ID token for user:", user.displayName);
-        const token = await user.getIdToken();
-        console.log("✅ Successfully got token");
-        return token;
+        // Check if user is logged in via Google OAuth
+        const userProfile = localStorage.getItem('userProfile');
+        if (!userProfile) {
+            throw new Error("User not logged in. Please login with Google first.");
+        }
+
+        const profile = JSON.parse(userProfile);
+        console.log("Getting OAuth2 token for user:", profile.name);
+
+        // Request OAuth2 token using Google Identity Services
+        return new Promise((resolve, reject) => {
+            // Use Google Identity Services to get access token
+            if (typeof google !== 'undefined' && google.accounts.oauth2) {
+                google.accounts.oauth2.initTokenClient({
+                    client_id: oauthConfig.clientId,
+                    scope: oauthConfig.scope,
+                    callback: (response) => {
+                        if (response.error) {
+                            console.error("OAuth2 error:", response.error);
+                            reject(new Error(`OAuth2 error: ${response.error}`));
+                            return;
+                        }
+                        
+                        accessToken = response.access_token;
+                        tokenExpiry = Date.now() + (response.expires_in * 1000);
+                        console.log("OAuth2 token obtained successfully");
+                        resolve(accessToken);
+                    }
+                }).requestAccessToken();
+            } else {
+                reject(new Error("Google Identity Services not loaded"));
+            }
+        });
+
     } catch (error) {
-        console.error("❌ Error getting user token:", error);
-        throw new Error("Failed to get authentication token");
+        console.error("Error getting OAuth2 access token:", error);
+        throw error;
     }
 }
 
 /**
- * Lưu kết quả quiz vào Google Sheets
- * @param {Object} resultData - Dữ liệu kết quả {mssv, name, score, submitTime}
- * @returns {Promise<Object>} Kết quả lưu dữ liệu
+ * Check if student already exists in the sheet
+ * @param {string} mssv - Student ID
+ * @param {string} name - Student name
+ * @returns {Promise<Object>} Check result
+ */
+async function checkExistingStudent(mssv, name) {
+    try {
+        console.log("Checking existing student:", mssv, name);
+        
+        const token = await getAccessToken();
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${resultSheetName}!A:B?key=${apiKey}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Sheet data received:", data);
+
+        if (data.values && data.values.length > 0) {
+            // Check if student exists (skip header row)
+            for (let i = 1; i < data.values.length; i++) {
+                const row = data.values[i];
+                if (row.length >= 2) {
+                    const existingMssv = row[0]?.toString().trim();
+                    const existingName = row[1]?.toString().trim();
+                    
+                    if (existingMssv === mssv.toString().trim() || 
+                        existingName === name.toString().trim()) {
+                        console.log("Student found:", existingMssv, existingName);
+                        return {
+                            exists: true,
+                            row: i + 1,
+                            data: row
+                        };
+                    }
+                }
+            }
+        }
+
+        console.log("Student not found");
+        return { exists: false };
+    } catch (error) {
+        console.error("Error checking existing student:", error);
+        throw error;
+    }
+}
+
+/**
+ * Add new result to Google Sheets
+ * @param {Object} resultData - Result data to add
+ * @param {string} token - Access token
+ * @returns {Promise<Object>} Add result
+ */
+async function addNewResult(resultData, token) {
+    try {
+        console.log("Adding new result to Google Sheets...");
+        console.log("Result data:", resultData);
+
+        const values = [
+            [
+                resultData.mssv,
+                resultData.name,
+                resultData.email || '',
+                resultData.score,
+                resultData.totalQuestions,
+                new Date().toLocaleString('vi-VN')
+            ]
+        ];
+
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${resultRange}:append?valueInputOption=RAW&key=${apiKey}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                values: values
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error response:", errorData);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${JSON.stringify(errorData)}`);
+        }
+
+        const data = await response.json();
+        console.log("Result added successfully:", data);
+
+        return {
+            success: true,
+            message: "Kết quả đã được lưu thành công!",
+            data: resultData,
+            sheetData: data
+        };
+    } catch (error) {
+        console.error("Error adding new result:", error);
+        throw error;
+    }
+}
+
+/**
+ * Save quiz result to Google Sheets
+ * @param {Object} resultData - Result data
+ * @returns {Promise<Object>} Save result
  */
 async function saveQuizResult(resultData) {
     try {
@@ -75,33 +194,23 @@ async function saveQuizResult(resultData) {
             throw new Error("Missing required data: mssv and name are required");
         }
 
-        // Wait for auth system to be ready
-        await waitForAuthSystem();
-
-        // Check if user is authenticated
-        const user = getCurrentUser();
-        if (!user) {
-            console.log("User not authenticated, saving locally");
-            return {
-                success: true,
-                message: "Result saved locally - User not authenticated",
-                data: resultData
-            };
+        // Get Google user profile for additional info
+        const userProfile = localStorage.getItem('userProfile');
+        if (userProfile) {
+            try {
+                const profile = JSON.parse(userProfile);
+                console.log("Google user profile:", profile.name, profile.email);
+                // Add email from Google profile if not provided
+                if (!resultData.email && profile.email) {
+                    resultData.email = profile.email;
+                }
+            } catch (error) {
+                console.warn("Error parsing user profile:", error);
+            }
         }
 
-        // Get access token
-        let token;
-        try {
-            token = await getAccessToken();
-            console.log("✅ Access token obtained successfully");
-        } catch (error) {
-            console.error("❌ Failed to get access token:", error);
-            return {
-                success: false,
-                error: "Không thể xác thực người dùng. Vui lòng đăng nhập lại.",
-                data: resultData
-            };
-        }
+        // Get OAuth2 access token
+        const token = await getAccessToken();
 
         // Check if student already exists
         const existingStudent = await checkExistingStudent(resultData.mssv, resultData.name);
@@ -122,6 +231,18 @@ async function saveQuizResult(resultData) {
 
     } catch (error) {
         console.error("Error saving quiz result:", error);
+        
+        // Check if it's an OAuth2 error
+        if (error.message.includes('OAuth2') || error.message.includes('not logged in')) {
+            return {
+                success: false,
+                error: "Vui lòng đăng nhập bằng Google trước khi làm bài kiểm tra.",
+                action: "oauth_required",
+                data: resultData,
+                details: "Cần đăng nhập Google để lưu kết quả"
+            };
+        }
+        
         return {
             success: false,
             error: error.message,
@@ -131,290 +252,47 @@ async function saveQuizResult(resultData) {
 }
 
 /**
- * Kiểm tra xem sinh viên đã tồn tại trong sheet chưa
- * @param {string} mssv - Mã số sinh viên
- * @param {string} name - Họ và tên
- * @returns {Promise<Object>} Thông tin sinh viên đã tồn tại
+ * Load Google Identity Services
  */
-async function checkExistingStudent(mssv, name) {
-    try {
-        console.log("Checking existing student...");
-        console.log("MSSV:", mssv);
-        console.log("Name:", name);
-
-        // Use API key for read operations (still works)
-        const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${resultRange}?key=${apiKey}`
-        );
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+function loadGoogleIdentityServices() {
+    return new Promise((resolve, reject) => {
+        if (typeof google !== 'undefined' && google.accounts.oauth2) {
+            resolve();
+            return;
         }
 
-        const data = await response.json();
-        console.log("Raw data from Result sheet:", data);
-
-        if (!data.values || data.values.length === 0) {
-            console.log("No existing data found");
-            return { exists: false, rowIndex: -1 };
-        }
-
-        const rows = data.values;
-        console.log("Total rows in Result sheet:", rows.length);
-
-        // Check each row for existing student
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            console.log(`Checking row ${i + 1}:`, row);
-
-            if (row.length >= 2) {
-                const existingMSSV = row[0] ? row[0].toString().trim() : "";
-                const existingName = row[1] ? row[1].toString().trim() : "";
-
-                console.log(`Row ${i + 1} - Existing MSSV: "${existingMSSV}", Name: "${existingName}"`);
-                console.log(`Comparing with - MSSV: "${mssv}", Name: "${name}"`);
-
-                // Check if MSSV matches (case insensitive)
-                if (existingMSSV.toLowerCase() === mssv.toLowerCase()) {
-                    console.log("Found existing student by MSSV");
-                    return {
-                        exists: true,
-                        rowIndex: i + 1, // +1 because Google Sheets uses 1-based indexing
-                        matchType: "MSSV",
-                        existingData: row
-                    };
-                }
-
-                // Check if name matches (case insensitive, remove extra spaces)
-                if (existingName.toLowerCase().replace(/\s+/g, ' ') === name.toLowerCase().replace(/\s+/g, ' ')) {
-                    console.log("Found existing student by name");
-                    return {
-                        exists: true,
-                        rowIndex: i + 1,
-                        matchType: "Name",
-                        existingData: row
-                    };
-                }
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            if (typeof google !== 'undefined' && google.accounts.oauth2) {
+                resolve();
+            } else {
+                reject(new Error('Google Identity Services failed to load'));
             }
-        }
-
-        console.log("No existing student found");
-        return { exists: false, rowIndex: -1 };
-
-    } catch (error) {
-        console.error("Error checking existing student:", error);
-        throw error;
-    }
-}
-
-/**
- * Thêm kết quả mới vào sheet
- * @param {Object} resultData - Dữ liệu kết quả
- * @returns {Promise<Object>} Kết quả thêm dữ liệu
- */
-async function addNewResult(resultData, accessToken) {
-    try {
-        console.log("Adding new result...");
-
-        const values = [
-            [
-                resultData.mssv,
-                resultData.name,
-                resultData.startTime || "",
-                resultData.submitTime || new Date().toISOString(),
-                resultData.timeSpent || 0,
-                resultData.score || 0
-            ]
-        ];
-
-        console.log("Values to append:", values);
-
-        const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${resultRange}:append?valueInputOption=RAW`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    values: values
-                })
-            }
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Error response:", errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
-
-        const result = await response.json();
-        console.log("Successfully added new result:", result);
-
-        return {
-            success: true,
-            action: "added",
-            data: resultData,
-            response: result
         };
-
-    } catch (error) {
-        console.error("Error adding new result:", error);
-        throw error;
-    }
-}
-
-/**
- * Cập nhật kết quả đã tồn tại
- * @param {number} rowIndex - Chỉ số dòng cần cập nhật
- * @param {Object} resultData - Dữ liệu kết quả mới
- * @returns {Promise<Object>} Kết quả cập nhật dữ liệu
- */
-async function updateExistingResult(rowIndex, resultData, accessToken) {
-    try {
-        console.log("Updating existing result at row:", rowIndex);
-
-        const range = `Result!A${rowIndex}:F${rowIndex}`;
-        const values = [
-            [
-                resultData.mssv,
-                resultData.name,
-                resultData.startTime || "",
-                resultData.submitTime || new Date().toISOString(),
-                resultData.timeSpent || 0,
-                resultData.score || 0
-            ]
-        ];
-
-        console.log("Update range:", range);
-        console.log("Values to update:", values);
-
-        const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=RAW`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
-                body: JSON.stringify({
-                    values: values
-                })
-            }
-        );
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Error response:", errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
-
-        const result = await response.json();
-        console.log("Successfully updated existing result:", result);
-
-        return {
-            success: true,
-            action: "updated",
-            data: resultData,
-            rowIndex: rowIndex,
-            response: result
+        script.onerror = () => {
+            reject(new Error('Failed to load Google Identity Services'));
         };
-
-    } catch (error) {
-        console.error("Error updating existing result:", error);
-        throw error;
-    }
+        document.head.appendChild(script);
+    });
 }
 
-/**
- * Lấy tất cả kết quả từ sheet
- * @returns {Promise<Array>} Danh sách kết quả
- */
-async function getAllResults() {
+// Initialize Google Identity Services when script loads
+document.addEventListener('DOMContentLoaded', async function() {
     try {
-        console.log("Getting all results from sheet...");
-
-        const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${resultRange}?key=${apiKey}`
-        );
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("All results data:", data);
-
-        if (!data.values || data.values.length === 0) {
-            return [];
-        }
-
-        const results = data.values.map((row, index) => ({
-            rowIndex: index + 1,
-            mssv: row[0] || "",
-            name: row[1] || "",
-            startTime: row[2] || "",
-            submitTime: row[3] || "",
-            timeSpent: row[4] || 0,
-            score: row[5] || 0
-        }));
-
-        console.log("Processed results:", results);
-        return results;
-
+        await loadGoogleIdentityServices();
+        console.log("Google Identity Services loaded successfully");
     } catch (error) {
-        console.error("Error getting all results:", error);
-        throw error;
+        console.error("Failed to load Google Identity Services:", error);
     }
-}
+});
 
-/**
- * Test function để kiểm tra kết nối và lưu dữ liệu
- * @param {Object} testData - Dữ liệu test
- * @returns {Promise<Object>} Kết quả test
- */
-async function testSaveResult(testData = null) {
-    console.log("=== Testing Save Result Function ===");
-
-    try {
-        // Use test data if provided, otherwise create sample data
-        const sampleData = testData || {
-            mssv: "TEST001",
-            name: "Nguyễn Văn Test",
-            score: 15,
-            submitTime: new Date().toISOString()
-        };
-
-        console.log("Testing with data:", sampleData);
-
-        const result = await saveQuizResult(sampleData);
-        console.log("Test result:", result);
-
-        return result;
-    } catch (error) {
-        console.error("Test failed:", error);
-        return {
-            success: false,
-            error: error.message
-        };
-    }
-}
-
-// Test function to verify the script loaded
-function testSaveResultLoaded() {
-    console.log("save-result.js loaded successfully!");
-    return true;
-}
-
-// Expose global functions
+// Export functions for global access
 window.saveQuizResult = saveQuizResult;
+window.getAccessToken = getAccessToken;
 window.checkExistingStudent = checkExistingStudent;
 window.addNewResult = addNewResult;
-window.updateExistingResult = updateExistingResult;
-window.getAllResults = getAllResults;
-window.testSaveResult = testSaveResult;
-window.testSaveResultLoaded = testSaveResultLoaded;
 
-// Log that the script has loaded
-console.log("save-result.js: All functions exported to window object");
+console.log("✅ save-result.js loaded with OAuth2 integration");
