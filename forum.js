@@ -148,12 +148,17 @@ function checkAuthState() {
 
 // Authentication Functions
 window.signOutUser = function() {
-  localStorage.removeItem('userProfile');
-  currentUser = null;
-  updateAuthUI(null);
-  showNotification('Đã đăng xuất thành công!', 'info');
-  // Reload page to refresh data
-  location.reload();
+  // Use Firebase sign out if available
+  if (window.signOutFirebase) {
+    window.signOutFirebase();
+  } else {
+    localStorage.removeItem('userProfile');
+    currentUser = null;
+    updateAuthUI(null);
+    showNotification('Đã đăng xuất thành công!', 'info');
+    // Reload page to refresh data
+    location.reload();
+  }
 };
 
 function updateAuthUI(user) {

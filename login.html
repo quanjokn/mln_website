@@ -15,8 +15,88 @@
     <!-- Custom CSS -->
     <link href="style.css" rel="stylesheet" />
     
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
+            authDomain: "mln111-cff07.firebaseapp.com",
+            databaseURL: "https://mln111-cff07-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mln111-cff07",
+            storageBucket: "mln111-cff07.firebasestorage.app",
+            messagingSenderId: "25534326749",
+            appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
+            measurementId: "G-5ZP1K3NQN3"
+        };
+
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Make auth available globally
+        window.firebaseAuth = auth;
+        window.firebaseProvider = provider;
+
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('User authenticated:', user.displayName);
+                // Store user info in localStorage for compatibility
+                const userProfile = {
+                    name: user.displayName,
+                    email: user.email,
+                    picture: user.photoURL,
+                    sub: user.uid
+                };
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                showUserInfo(userProfile);
+            } else {
+                console.log('User not authenticated');
+                localStorage.removeItem('userProfile');
+            }
+        });
+
+        // Firebase sign in function
+        window.signInWithFirebase = async function() {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log('Sign in successful:', user.displayName);
+            } catch (error) {
+                console.error('Sign in error:', error);
+                showError('Đăng nhập thất bại: ' + error.message);
+            }
+        };
+
+        // Check existing login on page load
+        function checkExistingLogin() {
+            const savedProfile = localStorage.getItem('userProfile');
+            if (savedProfile) {
+                try {
+                    const profile = JSON.parse(savedProfile);
+                    showUserInfo(profile);
+                } catch (error) {
+                    console.error("Error parsing saved profile:", error);
+                    localStorage.removeItem('userProfile');
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkExistingLogin();
+        });
+    </script>
 </head>
 
 <body>
@@ -61,23 +141,11 @@
                                     vui lòng đăng nhập bằng tài khoản Google của bạn.
                                 </p>
                                 
-                                <!-- Google Sign In Button -->
+                                <!-- Firebase Google Sign In Button -->
                                 <div class="mb-4">
-                                    <div id="g_id_onload"
-                                         data-client_id="118407744836973155611"
-                                         data-context="signin"
-                                         data-ux_mode="popup"
-                                         data-callback="handleCredentialResponse"
-                                         data-auto_prompt="false">
-                                    </div>
-                                    <div class="g_id_signin"
-                                         data-type="standard"
-                                         data-shape="rectangular"
-                                         data-theme="outline"
-                                         data-text="signin_with"
-                                         data-size="large"
-                                         data-logo_alignment="left">
-                                    </div>
+                                    <button class="btn btn-danger btn-lg" onclick="signInWithFirebase()">
+                                        <i class="bi bi-google me-2"></i>Đăng nhập với Google
+                                    </button>
                                 </div>
                                 
                                 <!-- Loading State -->
@@ -164,49 +232,6 @@
         // Global variables
         let userProfile = null;
 
-        // Handle Google Sign-In response
-        function handleCredentialResponse(response) {
-            console.log("Google Sign-In response received");
-            
-            // Show loading state
-            document.getElementById('loadingState').classList.remove('d-none');
-            document.getElementById('errorMessage').classList.add('d-none');
-            
-            try {
-                // Decode the JWT token
-                const responsePayload = decodeJwtResponse(response.credential);
-                console.log("Decoded response:", responsePayload);
-                
-                // Store user information
-                userProfile = {
-                    name: responsePayload.name,
-                    email: responsePayload.email,
-                    picture: responsePayload.picture,
-                    sub: responsePayload.sub
-                };
-                
-                // Save to localStorage
-                localStorage.setItem('userProfile', JSON.stringify(userProfile));
-                
-                // Show user info
-                showUserInfo(userProfile);
-                
-            } catch (error) {
-                console.error("Error processing Google Sign-In:", error);
-                showError("Có lỗi xảy ra khi xử lý thông tin đăng nhập.");
-            }
-        }
-
-        // Decode JWT response
-        function decodeJwtResponse(token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
-        }
-
         // Show user information
         function showUserInfo(profile) {
             document.getElementById('loadingState').classList.add('d-none');
@@ -234,24 +259,9 @@
             }
         }
 
-        // Check if user is already logged in
-        function checkExistingLogin() {
-            const savedProfile = localStorage.getItem('userProfile');
-            if (savedProfile) {
-                try {
-                    userProfile = JSON.parse(savedProfile);
-                    showUserInfo(userProfile);
-                } catch (error) {
-                    console.error("Error parsing saved profile:", error);
-                    localStorage.removeItem('userProfile');
-                }
-            }
-        }
-
         // Initialize when DOM loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log("Login page loaded");
-            checkExistingLogin();
         });
     </script>
 </body>

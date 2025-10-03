@@ -22,7 +22,53 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="pic/favicon.png" />
-    <!-- Google Identity Services -->
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
+            authDomain: "mln111-cff07.firebaseapp.com",
+            databaseURL: "https://mln111-cff07-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "mln111-cff07",
+            storageBucket: "mln111-cff07.firebasestorage.app",
+            messagingSenderId: "25534326749",
+            appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
+            measurementId: "G-5ZP1K3NQN3"
+        };
+
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getAuth, 
+            onAuthStateChanged 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Make auth available globally
+        window.firebaseAuth = auth;
+
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('User authenticated:', user.displayName);
+                // Store user info in localStorage for compatibility
+                const userProfile = {
+                    name: user.displayName,
+                    email: user.email,
+                    picture: user.photoURL,
+                    sub: user.uid
+                };
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+            } else {
+                console.log('User not authenticated');
+                localStorage.removeItem('userProfile');
+            }
+        });
+    </script>
+    <!-- Google Identity Services for OAuth2 -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <script src="script.js"></script>

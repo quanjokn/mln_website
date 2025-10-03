@@ -1,22 +1,63 @@
-// save-result.js - OAuth2 Google Sheets Integration
+// save-result.js - Firebase Auth + Google Sheets Integration
 const sheetId = "1kx--gwSvckfHcUMxAKcZbfxKhN_Jf7s1tQQECro1-1U";
 const apiKey = "AIzaSyBNi1lEqoeaUoTkWNYg8rqdwcvziJ7ImAw";
 const resultRange = "Result!A:F"; 
 
-// OAuth2 Configuration
-const oauthConfig = {
-    clientId: "118407744836973155611",
-    scope: "https://www.googleapis.com/auth/spreadsheets",
-    redirectUri: window.location.origin + "/oauth-callback.html"
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
+  authDomain: "mln111-cff07.firebaseapp.com",
+  databaseURL: "https://mln111-cff07-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mln111-cff07",
+  storageBucket: "mln111-cff07.firebasestorage.app",
+  messagingSenderId: "25534326749",
+  appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
+  measurementId: "G-5ZP1K3NQN3"
 };
 
-// OAuth2 token management
+// Firebase Auth and Google Sheets token management
 let accessToken = null;
 let tokenExpiry = null;
+let firebaseAuth = null;
+let currentUser = null;
 const resultSheetName = "Result";
 
 /**
- * Get OAuth2 access token from user's Google account
+ * Initialize Firebase Auth
+ */
+async function initializeFirebaseAuth() {
+    try {
+        // Import Firebase modules dynamically
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+        const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        firebaseAuth = getAuth(app);
+        
+        console.log("Firebase Auth initialized successfully");
+        
+        // Listen for auth state changes
+        onAuthStateChanged(firebaseAuth, (user) => {
+            currentUser = user;
+            if (user) {
+                console.log("User authenticated:", user.displayName);
+            } else {
+                console.log("User not authenticated");
+                accessToken = null;
+                tokenExpiry = null;
+            }
+        });
+        
+        return firebaseAuth;
+    } catch (error) {
+        console.error("Error initializing Firebase Auth:", error);
+        throw error;
+    }
+}
+
+/**
+ * Get OAuth2 access token from Firebase Auth user
  * @returns {Promise<string>} Access token
  */
 async function getAccessToken() {
@@ -26,22 +67,29 @@ async function getAccessToken() {
     }
 
     try {
-        // Check if user is logged in via Google OAuth
-        const userProfile = localStorage.getItem('userProfile');
-        if (!userProfile) {
+        // Ensure Firebase Auth is initialized
+        if (!firebaseAuth) {
+            await initializeFirebaseAuth();
+        }
+
+        // Check if user is authenticated
+        if (!currentUser) {
             throw new Error("User not logged in. Please login with Google first.");
         }
 
-        const profile = JSON.parse(userProfile);
-        console.log("Getting OAuth2 token for user:", profile.name);
+        console.log("Getting OAuth2 token for user:", currentUser.displayName);
 
-        // Request OAuth2 token using Google Identity Services
+        // Get the ID token from Firebase Auth
+        const idToken = await currentUser.getIdToken();
+        
+        // Use the ID token to get access token for Google Sheets API
+        // This requires a backend service or using Google Identity Services
         return new Promise((resolve, reject) => {
-            // Use Google Identity Services to get access token
+            // Use Google Identity Services to get access token with Firebase user
             if (typeof google !== 'undefined' && google.accounts.oauth2) {
                 google.accounts.oauth2.initTokenClient({
-                    client_id: oauthConfig.clientId,
-                    scope: oauthConfig.scope,
+                    client_id: "118407744836973155611", // Same client ID as before
+                    scope: "https://www.googleapis.com/auth/spreadsheets",
                     callback: (response) => {
                         if (response.error) {
                             console.error("OAuth2 error:", response.error);
@@ -194,18 +242,12 @@ async function saveQuizResult(resultData) {
             throw new Error("Missing required data: mssv and name are required");
         }
 
-        // Get Google user profile for additional info
-        const userProfile = localStorage.getItem('userProfile');
-        if (userProfile) {
-            try {
-                const profile = JSON.parse(userProfile);
-                console.log("Google user profile:", profile.name, profile.email);
-                // Add email from Google profile if not provided
-                if (!resultData.email && profile.email) {
-                    resultData.email = profile.email;
-                }
-            } catch (error) {
-                console.warn("Error parsing user profile:", error);
+        // Get Firebase user profile for additional info
+        if (currentUser) {
+            console.log("Firebase user profile:", currentUser.displayName, currentUser.email);
+            // Add email from Firebase user if not provided
+            if (!resultData.email && currentUser.email) {
+                resultData.email = currentUser.email;
             }
         }
 
@@ -252,7 +294,7 @@ async function saveQuizResult(resultData) {
 }
 
 /**
- * Load Google Identity Services
+ * Load Google Identity Services for OAuth2 token
  */
 function loadGoogleIdentityServices() {
     return new Promise((resolve, reject) => {
@@ -279,13 +321,18 @@ function loadGoogleIdentityServices() {
     });
 }
 
-// Initialize Google Identity Services when script loads
+// Initialize Firebase Auth and Google Identity Services when script loads
 document.addEventListener('DOMContentLoaded', async function() {
     try {
+        // Initialize Firebase Auth
+        await initializeFirebaseAuth();
+        console.log("Firebase Auth initialized successfully");
+        
+        // Load Google Identity Services for OAuth2
         await loadGoogleIdentityServices();
         console.log("Google Identity Services loaded successfully");
     } catch (error) {
-        console.error("Failed to load Google Identity Services:", error);
+        console.error("Failed to initialize authentication services:", error);
     }
 });
 
@@ -294,5 +341,6 @@ window.saveQuizResult = saveQuizResult;
 window.getAccessToken = getAccessToken;
 window.checkExistingStudent = checkExistingStudent;
 window.addNewResult = addNewResult;
+window.initializeFirebaseAuth = initializeFirebaseAuth;
 
-console.log("✅ save-result.js loaded with OAuth2 integration");
+console.log("✅ save-result.js loaded with Firebase Auth + OAuth2 integration");
