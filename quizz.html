@@ -22,9 +22,6 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="pic/favicon.png" />
-    <!-- Auth Manager -->
-    <script type="module" src="auth-manager.js"></script>
-    
     <script src="script.js"></script>
     <script src="script-sheet-api.js"></script>
     <script src="save-result.js"></script>
@@ -161,15 +158,14 @@
                   id="studentId"
                   placeholder="Nhập mã số sinh viên (ví dụ: SE123456)"
                   required
-                  pattern="^(SE|se)\d{6}$"
+                  pattern="^[Ss][a-zA-Z]\d{6}$"
                 />
                 <div class="invalid-feedback">
-                  Mã số sinh viên phải có định dạng SE/se + 6 chữ số (ví dụ:
-                  SE123456).
+                  Mã số sinh viên không đúng định dạng.
                 </div>
                 <div class="form-text">
                   <i class="bi bi-info-circle me-1"></i>
-                  Định dạng: SE hoặc se + 6 chữ số (ví dụ: SE123456, se789012)
+                  ví dụ: SE123456, ss789012 
                 </div>
               </div>
               <div class="mb-3">
@@ -540,22 +536,28 @@
             handlePasswordCheck();
           });
 
-      // Student info form
-      document.getElementById('studentInfoForm').addEventListener('submit', handleStudentInfoSubmit);
-      
-      // Real-time validation for student ID
-      document.getElementById('studentId').addEventListener('input', function() {
-        const studentId = this.value.trim();
-        const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
-        
-        if (studentId && !studentIdRegex.test(studentId)) {
-          this.classList.add('is-invalid');
-          this.setCustomValidity('Mã số sinh viên phải bắt đầu bằng \'s\' + chữ cái + 6 chữ số (ví dụ: SE123456)');
-        } else {
-          this.classList.remove('is-invalid');
-          this.setCustomValidity('');
-        }
-      });
+        // Student info form
+        document
+          .getElementById("studentInfoForm")
+          .addEventListener("submit", handleStudentInfoSubmit);
+
+        // Real-time validation for student ID
+        document
+          .getElementById("studentId")
+          .addEventListener("input", function () {
+            const studentId = this.value.trim();
+            const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
+
+            if (studentId && !studentIdRegex.test(studentId)) {
+              this.classList.add("is-invalid");
+              this.setCustomValidity(
+                "Mã số sinh viên phải có định dạng S/s + chữ cái + 6 chữ số (ví dụ: SE123456, ss789012)"
+              );
+            } else {
+              this.classList.remove("is-invalid");
+              this.setCustomValidity("");
+            }
+          });
 
         // Quiz navigation buttons
         document
@@ -579,16 +581,18 @@
         const studentId = document.getElementById("studentId").value.trim();
         const studentName = document.getElementById("studentName").value.trim();
 
-      // Validate student ID format: s + letter + 6 digits
-      const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
-      if (!studentIdRegex.test(studentId)) {
-        // Show error message
-        const studentIdInput = document.getElementById('studentId');
-        studentIdInput.classList.add('is-invalid');
-        studentIdInput.setCustomValidity('Mã số sinh viên phải bắt đầu bằng \'s\' + chữ cái + 6 chữ số (ví dụ: SE123456)');
-        studentIdInput.reportValidity();
-        return;
-      }
+        // Validate student ID format: S/s + letter + 6 digits
+        const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
+        if (!studentIdRegex.test(studentId)) {
+          // Show error message
+          const studentIdInput = document.getElementById("studentId");
+          studentIdInput.classList.add("is-invalid");
+          studentIdInput.setCustomValidity(
+            "Mã số sinh viên phải có định dạng S/s + chữ cái + 6 chữ số (ví dụ: SE123456, ss789012)"
+          );
+          studentIdInput.reportValidity();
+          return;
+        }
 
         // Clear any previous validation errors
         const studentIdInput = document.getElementById("studentId");
@@ -797,12 +801,23 @@
 
         currentQ.options.forEach((option, index) => {
           const div = document.createElement("div");
-          div.className = "form-check option-item mb-3";
+          div.className = "form-check option-item mb-3 clickable-option";
+          div.style.cursor = "pointer";
           div.innerHTML = `
                     <input class="form-check-input" type="radio" name="q${state.currentQuestion}" value="${index}" id="opt${index}">
-                    <label class="form-check-label" for="opt${index}">${option}</label>
+                    <label class="form-check-label w-100" for="opt${index}">${option}</label>
                 `;
           container.appendChild(div);
+
+          // Add click handler for the entire option div
+          div.addEventListener("click", function(e) {
+            // Don't trigger if clicking directly on the radio input
+            if (e.target.type !== 'radio') {
+              const radio = div.querySelector("input");
+              radio.checked = true;
+              radio.dispatchEvent(new Event('change'));
+            }
+          });
 
           // Add click handler
           const radio = div.querySelector("input");
@@ -1332,31 +1347,9 @@
         }, 1000);
       }
 
-      // Check authentication status using AuthManager
-      async function checkAuthentication() {
-        try {
-          const isAuthenticated = await window.authManager.requireAuth('login.html');
-          if (isAuthenticated) {
-            const user = window.authManager.getCurrentUser();
-            console.log("User authenticated:", user.displayName);
-            console.log("Google OAuth2 token available for Sheets API");
-            return true;
-          }
-          return false;
-        } catch (error) {
-          console.error("Authentication check error:", error);
-          return false;
-        }
-      }
-
       // Initialize when DOM loads
       document.addEventListener("DOMContentLoaded", async function () {
         console.log("DOM loaded, initializing quiz system...");
-
-        // Check authentication first
-        if (!(await checkAuthentication())) {
-          return;
-        }
 
         // Check if required functions are loaded
         console.log("Checking loaded functions...");
@@ -1386,23 +1379,144 @@
           }, 1000);
         }
 
-        // Clear all localStorage data when starting (except userProfile)
-        const userProfile = localStorage.getItem('userProfile');
+        // Clear all localStorage data when starting
         localStorage.clear();
-        if (userProfile) {
-          localStorage.setItem('userProfile', userProfile);
-        }
-        console.log("Cleared all localStorage data except userProfile");
+        console.log("Cleared all localStorage data");
 
         // Clean up any existing modal backdrops on page load
         cleanupModalBackdrops();
 
-        // Always start with password check and student info input
+        // Always start with password check
         console.log("Starting with password check...");
         setTimeout(() => {
           initializeQuiz();
         }, 500);
       });
+    </script>
+    
+    <!-- Anti-DevTools Protection (Only on production domain) -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // Chỉ kích hoạt protection khi không phải localhost/127.0.0.1
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' || 
+            window.location.hostname === '' ||
+            window.location.protocol === 'file:') {
+            return; // Không áp dụng protection trên localhost
+        }
+        
+        // Detect DevTools
+        let devtools = {
+            open: false,
+            orientation: null
+        };
+        
+        function detectDevTools() {
+            let threshold = 160;
+            
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devtools.open) {
+                    devtools.open = true;
+                    showWarning();
+                }
+            } else {
+                devtools.open = false;
+                hideWarning();
+            }
+        }
+        
+        // Warning overlay
+        function showWarning() {
+            let warning = document.getElementById('devtools-warning');
+            if (!warning) {
+                warning = document.createElement('div');
+                warning.id = 'devtools-warning';
+                warning.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                         background: rgba(220, 53, 69, 0.95); z-index: 999999; 
+                         display: flex; align-items: center; justify-content: center; 
+                         color: white; font-family: Arial, sans-serif; font-size: 24px; 
+                         text-align: center; font-weight: bold;">
+                        <div>
+                            <h2>⚠️ CẢNH BÁO BẢO MẬT</h2>
+                            <p>Đóng Developer Tools để tiếp tục sử dụng trang web</p>
+                            <p style="font-size: 16px; margin-top: 20px;">
+                                Nội dung này được bảo vệ bởi hệ thống bảo mật
+                            </p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(warning);
+            }
+            warning.style.display = 'flex';
+        }
+        
+        function hideWarning() {
+            let warning = document.getElementById('devtools-warning');
+            if (warning) {
+                warning.style.display = 'none';
+            }
+        }
+        
+        // Block specific keyboard shortcuts cho dev tools
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.key === 'F12') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+Shift+I (Windows/Linux) hoặc Cmd+Shift+I (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+Shift+J (Console)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+U (View Source)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+Shift+C (Element Inspector)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, true);
+        
+        // Modify context menu để chỉ block inspect-related items
+        document.addEventListener('contextmenu', function(e) {
+            // Cho phép right-click bình thường, chỉ can thiệp khi cần
+            // Browser sẽ tự động ẩn "Inspect" option nếu DevTools bị block
+        });
+        
+        // Disable console functions
+        if (typeof console !== 'undefined') {
+            console.log = console.warn = console.error = console.info = console.debug = function() {
+                return 'Console đã bị vô hiệu hóa để bảo vệ nội dung';
+            };
+        }
+        
+        // Start monitoring
+        setInterval(detectDevTools, 500);
+        detectDevTools(); // Initial check
+        
+    })();
     </script>
   </body>
 </html>

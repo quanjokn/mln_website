@@ -721,5 +721,130 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script-chatbox.js"></script>
+    
+    <!-- Anti-DevTools Protection (Only on production domain) -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // Chỉ kích hoạt protection khi không phải localhost/127.0.0.1
+        if (window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' || 
+            window.location.hostname === '' ||
+            window.location.protocol === 'file:') {
+            return; // Không áp dụng protection trên localhost
+        }
+        
+        // Detect DevTools
+        let devtools = {
+            open: false,
+            orientation: null
+        };
+        
+        function detectDevTools() {
+            let threshold = 160;
+            
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devtools.open) {
+                    devtools.open = true;
+                    showWarning();
+                }
+            } else {
+                devtools.open = false;
+                hideWarning();
+            }
+        }
+        
+        // Warning overlay
+        function showWarning() {
+            let warning = document.getElementById('devtools-warning');
+            if (!warning) {
+                warning = document.createElement('div');
+                warning.id = 'devtools-warning';
+                warning.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                         background: rgba(220, 53, 69, 0.95); z-index: 999999; 
+                         display: flex; align-items: center; justify-content: center; 
+                         color: white; font-family: Arial, sans-serif; font-size: 24px; 
+                         text-align: center; font-weight: bold;">
+                        <div>
+                            <h2>⚠️ CẢNH BÁO BẢO MẬT</h2>
+                            <p>Đóng Developer Tools để tiếp tục sử dụng trang web</p>
+                            <p style="font-size: 16px; margin-top: 20px;">
+                                Nội dung này được bảo vệ bởi hệ thống bảo mật
+                            </p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(warning);
+            }
+            warning.style.display = 'flex';
+        }
+        
+        function hideWarning() {
+            let warning = document.getElementById('devtools-warning');
+            if (warning) {
+                warning.style.display = 'none';
+            }
+        }
+        
+        // Block specific keyboard shortcuts cho dev tools
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.key === 'F12') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+Shift+I (Windows/Linux) hoặc Cmd+Shift+I (Mac)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+Shift+J (Console)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+U (View Source)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            
+            // Ctrl+Shift+C (Element Inspector)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, true);
+        
+        // Modify context menu để chỉ block inspect-related items
+        document.addEventListener('contextmenu', function(e) {
+            // Cho phép right-click bình thường, chỉ can thiệp khi cần
+            // Browser sẽ tự động ẩn "Inspect" option nếu DevTools bị block
+        });
+        
+        // Disable console functions
+        if (typeof console !== 'undefined') {
+            console.log = console.warn = console.error = console.info = console.debug = function() {
+                return 'Console đã bị vô hiệu hóa để bảo vệ nội dung';
+            };
+        }
+        
+        // Start monitoring
+        setInterval(detectDevTools, 500);
+        detectDevTools(); // Initial check
+        
+    })();
+    </script>
   </body>
 </html>

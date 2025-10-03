@@ -107,11 +107,16 @@
               </ul>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="login.html">Kiểm tra</a>
+              <a class="nav-link" href="quizz.html">Kiểm tra</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="forum.html">
-                <i class="bi bi-chat-dots me-1"></i>Diễn đàn
+                Diễn đàn
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="chatbox.html">
+                Chatbot
               </a>
             </li>
             <li class="nav-item">
@@ -185,7 +190,7 @@
                   <i class="bi bi-person-heart me-2"></i>
                   Tìm hiểu
                 </a>
-                <a href="login.html" class="btn btn-outline-light-hero btn-lg">
+                <a href="quizz.html" class="btn btn-outline-light-hero btn-lg">
                   <i class="bi bi-question-circle me-2"></i>
                   Kiểm tra
                 </a>
@@ -1346,59 +1351,81 @@
                   </div>
 
                   <h3 class="card-title text-classical mb-3">
-                    Bài kiểm tra toàn diện bằng hình thức trắc nghiệm hoặc
-                    flashcard
+                    Bài kiểm tra kiến thức 
                   </h3>
 
                   <div class="quiz-features row text-start mb-4">
                     <div class="col-md-6">
                       <div class="feature-item d-flex align-items-center mb-3">
                         <i
-                          class="bi bi-check-circle-fill text-success me-3"
+                          class="bi bi-shield-lock-fill text-warning me-3"
                         ></i>
-                        <span>Câu hỏi đa dạng</span>
+                        <span><strong>Yêu cầu mật khẩu</strong> để truy cập</span>
                       </div>
                       <div class="feature-item d-flex align-items-center mb-3">
-                        <i class="bi bi-clock text-info me-3"></i>
-                        <span>Không giới hạn thời gian</span>
+                        <i class="bi bi-person-badge text-info me-3"></i>
+                        <span>Nhập <strong>MSSV và họ tên</strong> để lưu kết quả</span>
+                      </div>
+                      <div class="feature-item d-flex align-items-center mb-3">
+                        <i class="bi bi-clock text-secondary me-3"></i>
+                        <span>Có giới hạn thời gian cho mỗi câu hỏi</span>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="feature-item d-flex align-items-center mb-3">
-                        <i class="bi bi-lightbulb text-warning me-3"></i>
-                        <span>Có giải thích sau khi nộp bài</span>
+                        <i class="bi bi-database-fill text-success me-3"></i>
+                        <span><strong>Tự động lưu điểm</strong> vào hệ thống</span>
                       </div>
                       <div class="feature-item d-flex align-items-center mb-3">
-                        <i class="bi bi-arrow-repeat text-secondary me-3"></i>
-                        <strong
-                          >Điền <span style="color: green">đúng</span> thông tin
-                          để lưu kết quả</strong
-                        >
+                        <i class="bi bi-lightbulb text-warning me-3"></i>
+                        <span>Có giải thích chi tiết sau khi nộp bài</span>
+                      </div>
+                      <div class="feature-item d-flex align-items-center mb-3">
+                        <i class="bi bi-arrow-clockwise text-danger me-3"></i>
+                        <span><strong>Chỉ được làm 1 lần</strong> (không làm lại)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Security Notice -->
+                  <div class="alert alert-warning border-0 mb-4" role="alert">
+                    <div class="">
+                      <i class="bi bi-exclamation-triangle-fill fs-5 me-3 mt-1"></i>
+                      <div class="">
+                        <h6 class="alert-heading mb-1 fs-4">Lưu ý quan trọng:</h6>
+                        <ul class="small mb-0" style="text-align: left;" >
+                          <li>Cần có <strong>mật khẩu chính thức</strong> từ giảng viên để truy cập</li>
+                          <li>Phải điền <strong>đúng MSSV</strong> (định dạng: SE + 6 số) và <strong>họ tên đầy đủ</strong></li>
+                          <li>Mỗi sinh viên chỉ được làm bài <strong>1 lần duy nhất</strong></li>
+                          <li>Điểm số sẽ được <strong>lưu tự động</strong> vào hệ thống quản lý</li>
+                        </ul>
                       </div>
                     </div>
                   </div>
 
                   <p class="text-muted mb-4">
-                    Bài kiểm tra bao gồm các chủ đề: Giá trị cốt lõi, Tiểu sử,
-                    Tư tưởng chính trị, và Ảnh hưởng thời đại của tư tưởng Hồ
-                    Chí Minh.
+                    <i class="bi bi-list-check me-2"></i>
+                    Bài kiểm tra bao gồm các chủ đề: <strong>Giá trị cốt lõi, Tiểu sử, 
+                    Tư tưởng chính trị, và Ảnh hưởng thời đại</strong> của tư tưởng Hồ Chí Minh.
+                    Câu hỏi được tải từ cơ sở dữ liệu trực tuyến.
                   </p>
 
                   <div class="cta-buttons">
                     <a
-                      href="login.html"
+                      href="quizz.html"
                       class="btn btn-classical btn-lg px-5 me-3"
                     >
-                      <i class="bi bi-play-circle me-2"></i>
-                      Bắt đầu kiểm tra
+                      <i class="bi bi-shield-check me-2"></i>
+                      Bắt đầu kiểm tra chính thức
                     </a>
                     <button
-                      class="btn btn-outline-classical btn-lg"
+                      class="btn btn-outline-classical btn-lg px-4"
                       data-bs-toggle="modal"
                       data-bs-target="#quizInfoModal"
+                      style="margin-top: 20px;"
                     >
                       <i class="bi bi-info-circle me-2"></i>
-                      Hướng dẫn
+                      Hướng dẫn chi tiết
                     </button>
                   </div>
                 </div>
@@ -1415,7 +1442,7 @@
             <div class="modal-header bg-classical text-white">
               <h5 class="modal-title">
                 <i class="bi bi-info-circle me-2"></i>
-                Hướng dẫn làm bài kiểm tra
+                Hướng dẫn làm bài kiểm tra chính thức
               </h5>
               <button
                 type="button"
@@ -1426,42 +1453,70 @@
             <div class="modal-body">
               <div class="row">
                 <div class="col-md-6">
+                  <h6 class="text-classical">� Quy trình truy cập:</h6>
+                  <ol class="small mb-3">
+                    <li><strong>Nhập mật khẩu</strong> được cung cấp bởi giảng viên</li>
+                    <li><strong>Điền thông tin cá nhân:</strong> MSSV (SE + 6 số) và họ tên đầy đủ</li>
+                    <li><strong>Bắt đầu làm bài</strong> - hệ thống sẽ tự động tính thời gian</li>
+                    <li><strong>Nộp bài</strong> - điểm số sẽ được lưu ngay lập tức</li>
+                  </ol>
+
                   <h6 class="text-classical">📚 Nội dung kiểm tra:</h6>
                   <ul class="small mb-3">
-                    <li>
-                      Giá trị cốt lõi: Yêu nước, Dân chủ, Đạo đức, Học tập
-                    </li>
+                    <li>Giá trị cốt lõi: Yêu nước, Dân chủ, Đạo đức, Học tập</li>
                     <li>Tiểu sử và cuộc đời Hồ Chí Minh</li>
                     <li>Tư tưởng chính trị và xã hội</li>
-                    <li>Ảnh hưởng đến thời đại hiện tại</li>
+                    <li>Ảnh hưởng và ứng dụng trong thời đại hiện tại</li>
                   </ul>
 
                   <h6 class="text-classical">⚡ Tính năng hỗ trợ:</h6>
                   <ul class="small mb-3">
-                    <li>Nút "Gợi ý" để có thêm thông tin</li>
-                    <li>Giải thích chi tiết sau mỗi câu trả lời</li>
-                    <li>Có thể quay lại câu hỏi trước đó</li>
-                    <li>Bỏ qua câu hỏi khó và quay lại sau</li>
+                    <li>Câu hỏi có thể có nút "Gợi ý" để hỗ trợ</li>
+                    <li>Giải thích chi tiết sau khi nộp bài</li>
+                    <li>Thanh tiến độ theo dõi quá trình làm bài</li>
+                    <li>Tự động lưu và backup câu trả lời</li>
                   </ul>
                 </div>
                 <div class="col-md-6">
                   <h6 class="text-classical">🎯 Cách tính điểm:</h6>
                   <ul class="small mb-3">
-                    <li>Mỗi câu đúng: +1 điểm</li>
-                    <li>Câu sai hoặc bỏ qua: 0 điểm</li>
-                    <li>Tổng điểm tối đa: 10/10</li>
-                    <li>
-                      Phân loại: Xuất sắc (≥8), Tốt (6-7), Trung bình (<6)
-                    </li>
+                    <li>Mỗi câu đúng: <strong>+1 điểm</strong></li>
+                    <li>Câu sai hoặc bỏ qua: <strong>0 điểm</strong></li>
+                    <li>Tổng điểm tối đa: <strong>Tùy thuộc số câu hỏi</strong></li>
+                    <li>Phân loại: Xuất sắc (≥80%), Tốt (60-79%), Trung bình (<60%)</li>
+                  </ul>
+
+                  <h6 class="text-classical">⚠️ Quy định quan trọng:</h6>
+                  <ul class="small mb-3">
+                    <li><strong>Mỗi sinh viên chỉ được làm 1 lần</strong></li>
+                    <li>Không được thoát ra giữa chừng</li>
+                    <li>Phải hoàn thành trong thời gian quy định</li>
+                    <li>Kết quả sẽ được lưu vĩnh viễn trong hệ thống</li>
                   </ul>
 
                   <h6 class="text-classical">💡 Lời khuyên:</h6>
                   <ul class="small mb-0">
-                    <li>Đọc kỹ câu hỏi trước khi chọn</li>
-                    <li>Sử dụng gợi ý khi cần thiết</li>
-                    <li>Đọc giải thích để học thêm kiến thức</li>
-                    <li>Có thể làm lại để cải thiện điểm số</li>
+                    <li>Chuẩn bị kỹ kiến thức trước khi làm bài</li>
+                    <li>Đọc kỹ câu hỏi trước khi chọn đáp án</li>
+                    <li>Kiểm tra kết nối internet ổn định</li>
+                    <li>Làm bài trong môi trường yên tĩnh</li>
                   </ul>
+                </div>
+              </div>
+              
+              <!-- Warning Section -->
+              <div class="row mt-3">
+                <div class="col-12">
+                  <div class="alert alert-danger border-0">
+                    <h6 class="text-danger mb-2">
+                      <i class="bi bi-exclamation-octagon me-2"></i>
+                      Cảnh báo vi phạm:
+                    </h6>
+                    <p class="small mb-0">
+                      Nghiêm cấm mọi hành vi gian lận, sao chép, hoặc chia sẻ mật khẩu. 
+                      Sinh viên vi phạm sẽ bị <strong>điểm 0</strong> và xử lý kỷ luật theo quy định.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1471,10 +1526,10 @@
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
               >
-                Đóng
+                <i class="bi bi-x-circle me-1"></i>Đóng
               </button>
-              <a href="login.html" class="btn btn-classical">
-                <i class="bi bi-play-circle me-1"></i>Bắt đầu ngay
+              <a href="quizz.html" class="btn btn-classical">
+                <i class="bi bi-shield-check me-1"></i>Tôi đã hiểu - Bắt đầu
               </a>
             </div>
           </div>
