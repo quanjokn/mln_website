@@ -46,13 +46,18 @@ class AuthManager {
                 onAuthStateChanged 
             } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
 
+            // Store Firebase functions for later use
+            this.signInWithPopup = signInWithPopup;
+            this.firebaseSignOut = signOut;
+            this.onAuthStateChanged = onAuthStateChanged;
+
             // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             this.auth = getAuth(app);
             this.provider = new GoogleAuthProvider();
 
             // Listen for auth state changes
-            onAuthStateChanged(this.auth, (user) => {
+            this.onAuthStateChanged(this.auth, (user) => {
                 this.currentUser = user;
                 this._updateUserProfile(user);
                 this._notifyListeners(user);
@@ -120,7 +125,7 @@ class AuthManager {
         }
 
         try {
-            const result = await signInWithPopup(this.auth, this.provider);
+            const result = await this.signInWithPopup(this.auth, this.provider);
             const user = result.user;
             console.log('✅ Sign in successful:', user.displayName);
             return user;
@@ -137,7 +142,7 @@ class AuthManager {
         }
 
         try {
-            await signOut(this.auth);
+            await this.firebaseSignOut(this.auth);
             console.log('✅ Sign out successful');
         } catch (error) {
             console.error('❌ Sign out error:', error);
