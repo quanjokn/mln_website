@@ -1255,7 +1255,6 @@
         if (typeof window.startOAuth2Flow === 'function') {
           window.startOAuth2Flow();
         } else {
-          alert('OAuth2 không được cấu hình đúng cách');
         }
       }
 
@@ -1268,7 +1267,6 @@
         if (typeof window.startOAuth2Flow === 'function') {
           window.startOAuth2Flow();
         } else {
-          alert('OAuth2 không được cấu hình đúng cách');
         }
       }
 
@@ -1285,6 +1283,11 @@
         if (gmailLoginModal) {
           gmailLoginModal.hide();
         }
+        
+        // Clean up modal backdrop
+        setTimeout(() => {
+          cleanupModalBackdrops();
+        }, 300);
         
         // Show password modal next
         setTimeout(() => {

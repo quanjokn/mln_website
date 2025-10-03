@@ -624,7 +624,6 @@ function handleOAuth2CallbackFromURL() {
             const newUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
             updateAuthUI();
-            alert("Đăng nhập Google thành công!");
             
             // Handle Gmail login success for quiz flow
             if (typeof window.handleGmailLoginSuccess === 'function') {
