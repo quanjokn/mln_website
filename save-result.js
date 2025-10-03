@@ -1,4 +1,7 @@
 
+// Import auth functions
+import { getCurrentUser } from './auth.js';
+
 const sheetId = "1kx--gwSvckfHcUMxAKcZbfxKhN_Jf7s1tQQECro1-1U";
 const apiKey = "AIzaSyBNi1lEqoeaUoTkWNYg8rqdwcvziJ7ImAw";
 const resultRange = "Result!A:F";
@@ -7,22 +10,52 @@ const resultRange = "Result!A:F";
 const resultSheetName = "Result";
 
 /**
+ * Wait for auth system to be ready
+ * @returns {Promise<void>}
+ */
+async function waitForAuthSystem() {
+    // Since getCurrentUser is imported, we just need to check if it returns a user
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    while (attempts < maxAttempts) {
+        const user = getCurrentUser();
+        if (user !== null) {
+            console.log("✅ Auth system is ready with user:", user.displayName);
+            return;
+        }
+        
+        console.log(`⏳ Waiting for user authentication... (attempt ${attempts + 1}/${maxAttempts})`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    
+    // Even if no user is authenticated, the system is ready
+    console.log("✅ Auth system is ready (no user authenticated)");
+}
+
+/**
  * Get OAuth 2.0 access token from current user
  * @returns {Promise<string>} Access token
  */
 async function getAccessToken() {
     // Get current user from auth system
     const user = getCurrentUser();
+    console.log("Current user in getAccessToken:", user);
+    
     if (!user) {
+        console.error("❌ No user found in getCurrentUser()");
         throw new Error("User not authenticated. Please login first.");
     }
 
     // Get access token from Firebase Auth
     try {
+        console.log("🔄 Getting ID token for user:", user.displayName);
         const token = await user.getIdToken();
+        console.log("✅ Successfully got token");
         return token;
     } catch (error) {
-        console.error("Error getting user token:", error);
+        console.error("❌ Error getting user token:", error);
         throw new Error("Failed to get authentication token");
     }
 }
@@ -42,6 +75,9 @@ async function saveQuizResult(resultData) {
             throw new Error("Missing required data: mssv and name are required");
         }
 
+        // Wait for auth system to be ready
+        await waitForAuthSystem();
+
         // Check if user is authenticated
         const user = getCurrentUser();
         if (!user) {
@@ -54,7 +90,18 @@ async function saveQuizResult(resultData) {
         }
 
         // Get access token
-        const token = await getAccessToken();
+        let token;
+        try {
+            token = await getAccessToken();
+            console.log("✅ Access token obtained successfully");
+        } catch (error) {
+            console.error("❌ Failed to get access token:", error);
+            return {
+                success: false,
+                error: "Không thể xác thực người dùng. Vui lòng đăng nhập lại.",
+                data: resultData
+            };
+        }
 
         // Check if student already exists
         const existingStudent = await checkExistingStudent(resultData.mssv, resultData.name);

@@ -358,4 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
   createLoginModal();
 });
 
+// Export for module imports
+export { getCurrentUser, signInWithGoogle, signOutUser, requireAuth, isAuthenticated, initAuth, createLoginModal };
+
 console.log('✅ Authentication system loaded');
