@@ -626,6 +626,11 @@ function handleOAuth2CallbackFromURL() {
             updateAuthUI();
             alert("Đăng nhập Google thành công!");
             
+            // Handle Gmail login success for quiz flow
+            if (typeof window.handleGmailLoginSuccess === 'function') {
+                window.handleGmailLoginSuccess();
+            }
+            
             // Auto-submit quiz if pending
             if (typeof window.autoSubmitAfterLogin === 'function') {
                 window.autoSubmitAfterLogin();
