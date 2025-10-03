@@ -825,7 +825,8 @@ window.forumFunctions = {
   addReply,
   filterByCategory,
   showAllTopics,
-  searchTopics
+  searchTopics,
+  initAuth  
 };
 
 // Ensure functions are globally accessible
@@ -836,5 +837,6 @@ window.addReply = window.addReply;
 window.filterByCategory = window.filterByCategory;
 window.showAllTopics = window.showAllTopics;
 window.searchTopics = window.searchTopics;
+window.initAuth = window.initAuth;
 
 console.log('✅ All forum functions exported globally');
