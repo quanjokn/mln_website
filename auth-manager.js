@@ -1,5 +1,28 @@
 // auth-manager.js - Centralized Authentication Manager
 // Firebase Configuration
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut, 
+  onAuthStateChanged 
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+import { 
+  getDatabase, 
+  ref, 
+  push, 
+  set, 
+  onValue, 
+  off,
+  serverTimestamp,
+  query,
+  orderByChild,
+  limitToLast,
+  connectDatabaseEmulator
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
 const firebaseConfig = {
     apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
     authDomain: "mln111-cff07.firebaseapp.com",
@@ -10,16 +33,6 @@ const firebaseConfig = {
     appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
     measurementId: "G-5ZP1K3NQN3"
 };
-
-// Import Firebase modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-    getAuth, 
-    signInWithPopup, 
-    GoogleAuthProvider, 
-    signOut, 
-    onAuthStateChanged 
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 class AuthManager {
     constructor() {
@@ -47,16 +60,26 @@ class AuthManager {
     async _doInitialize() {
         try {
             console.log('🔄 Initializing AuthManager...');
+            console.log('Firebase config:', firebaseConfig);
 
             // Initialize Firebase
             const app = initializeApp(firebaseConfig);
+            console.log('✅ Firebase app initialized:', app);
+            
             this.auth = getAuth(app);
+            console.log('✅ Firebase auth initialized:', this.auth);
+            
             this.provider = new GoogleAuthProvider();
+            console.log('✅ Google provider initialized:', this.provider);
 
-            console.log('✅ Firebase initialized successfully');
+            // Configure Google provider
+            this.provider.addScope('email');
+            this.provider.addScope('profile');
+            console.log('✅ Google provider scopes configured');
 
             // Listen for auth state changes
             onAuthStateChanged(this.auth, (user) => {
+                console.log('🔄 Auth state changed:', user ? user.displayName : 'No user');
                 this.currentUser = user;
                 this._updateUserProfile(user);
                 this._notifyListeners(user);
@@ -68,6 +91,7 @@ class AuthManager {
 
         } catch (error) {
             console.error('❌ AuthManager initialization error:', error);
+            console.error('Error details:', error);
             throw error;
         }
     }
@@ -119,9 +143,16 @@ class AuthManager {
 
     // Sign in with Google
     async signIn() {
+        console.log('🔄 Starting sign in process...');
+        
         if (!this.isInitialized) {
+            console.log('🔄 AuthManager not initialized, initializing...');
             await this.initialize();
         }
+
+        console.log('✅ AuthManager initialized, attempting sign in...');
+        console.log('Auth object:', this.auth);
+        console.log('Provider object:', this.provider);
 
         try {
             const result = await signInWithPopup(this.auth, this.provider);
@@ -130,6 +161,9 @@ class AuthManager {
             return user;
         } catch (error) {
             console.error('❌ Sign in error:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            console.error('Full error:', error);
             throw error;
         }
     }
