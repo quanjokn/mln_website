@@ -624,10 +624,6 @@ function handleOAuth2CallbackFromURL() {
             window.history.replaceState({}, document.title, newUrl);
             updateAuthUI();
             
-            // Auto-submit quiz if pending
-            if (typeof window.autoSubmitAfterLogin === 'function') {
-                window.autoSubmitAfterLogin();
-            }
         }).catch(error => {
             console.error("OAuth2 callback error:", error);
         });

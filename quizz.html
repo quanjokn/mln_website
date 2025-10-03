@@ -320,8 +320,6 @@
                 </div>
               </div>
 
-              <!-- OAuth2 Login Container -->
-              <div id="oauth2-login-container" class="mt-3"></div>
 
               <!-- Quiz Actions -->
               <div class="text-center mt-4">
@@ -997,15 +995,8 @@
           '<i class="bi bi-hourglass-split me-2"></i>Đang xử lý...';
         submitBtn.disabled = true;
 
-        // Check OAuth2 authentication first
-        if (typeof window.isAuthenticated === 'function' && !window.isAuthenticated()) {
-          // Show OAuth2 login modal
-          showOAuth2LoginModal();
-          // Reset submit button
-          submitBtn.innerHTML = originalText;
-          submitBtn.disabled = false;
-          return;
-        }
+        // OAuth2 authentication is already checked on page load
+        // No need to check again here
 
         // Clear timers and stop time
         if (currentQuestionTimer) {
@@ -1155,33 +1146,58 @@
         );
       }
 
-      // OAuth2 Login Modal
-      function showOAuth2LoginModal() {
+
+
+      // Handle OAuth2 callback from URL parameters
+      function handleOAuth2CallbackFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+
+        if (error) {
+          console.error("OAuth2 error:", error);
+          return;
+        }
+
+        if (code) {
+          // Handle OAuth2 callback
+          if (typeof window.handleOAuth2Callback === 'function') {
+            window.handleOAuth2Callback(code).then(() => {
+              console.log("OAuth2 login successful in quiz page");
+              // Remove code from URL
+              const newUrl = window.location.origin + window.location.pathname;
+              window.history.replaceState({}, document.title, newUrl);
+              
+            }).catch(error => {
+              console.error("OAuth2 callback error:", error);
+            });
+          }
+        }
+      }
+
+
+      // Show notification modal
+      function showNotificationModal(title, message, buttonText, onConfirm) {
         // Create modal HTML
         const modalHTML = `
-          <div class="modal fade" id="oauth2LoginModal" tabindex="-1" aria-labelledby="oauth2LoginModalLabel" aria-hidden="true">
+          <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="oauth2LoginModalLabel">
-                    <i class="bi bi-google text-primary me-2"></i>Đăng nhập Google
+                <div class="modal-header bg-primary text-white">
+                  <h5 class="modal-title" id="notificationModalLabel">
+                    <i class="bi bi-info-circle me-2"></i>${title}
                   </h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                  <div class="mb-4">
-                    <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                  <div class="mb-3">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
                   </div>
-                  <h6 class="mb-3">Cần đăng nhập Google để lưu kết quả</h6>
-                  <p class="text-muted mb-4">
-                    Để lưu kết quả quiz vào Google Sheets, bạn cần đăng nhập bằng tài khoản Google của mình.
-                  </p>
-                  <button type="button" class="btn btn-primary btn-lg" onclick="startOAuth2Login()">
-                    <i class="bi bi-google me-2"></i>Đăng nhập Google
-                  </button>
+                  <p class="mb-0">${message}</p>
                 </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <div class="modal-footer justify-content-center">
+                  <button type="button" class="btn btn-primary" id="notificationConfirmBtn">
+                    <i class="bi bi-check-lg me-2"></i>${buttonText}
+                  </button>
                 </div>
               </div>
             </div>
@@ -1189,7 +1205,7 @@
         `;
 
         // Remove existing modal if any
-        const existingModal = document.getElementById('oauth2LoginModal');
+        const existingModal = document.getElementById('notificationModal');
         if (existingModal) {
           existingModal.remove();
         }
@@ -1198,40 +1214,26 @@
         document.body.insertAdjacentHTML('beforeend', modalHTML);
 
         // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('oauth2LoginModal'));
+        const modal = new bootstrap.Modal(document.getElementById('notificationModal'));
         modal.show();
 
+        // Handle confirm button click
+        document.getElementById('notificationConfirmBtn').addEventListener('click', function() {
+          modal.hide();
+          if (onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+          }
+        });
+
         // Handle modal close
-        document.getElementById('oauth2LoginModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('notificationModal').addEventListener('hidden.bs.modal', function () {
           this.remove();
         });
       }
 
-      // Start OAuth2 login from modal (for quiz submission)
-      function startOAuth2Login() {
-        // Store current quiz state for later use
-        window.pendingQuizSubmission = true;
-        
-        // Start OAuth2 flow
-        if (typeof window.startOAuth2Flow === 'function') {
-          window.startOAuth2Flow();
-        } else {
-        }
-      }
-
-      // Auto-submit quiz after successful OAuth2 login
-      function autoSubmitAfterLogin() {
-        if (window.pendingQuizSubmission) {
-          window.pendingQuizSubmission = false;
-          // Wait a bit for UI to update, then submit
-          setTimeout(() => {
-            submitQuiz();
-          }, 1000);
-        }
-      }
-
       // Expose functions to global scope
-      window.autoSubmitAfterLogin = autoSubmitAfterLogin;
+      window.handleOAuth2CallbackFromURL = handleOAuth2CallbackFromURL;
+      window.showNotificationModal = showNotificationModal;
 
       function showResults(
         finalScore,
@@ -1470,15 +1472,33 @@
           }, 1000);
         }
 
-        // Clear all localStorage data when starting
-        localStorage.clear();
-        console.log("Cleared all localStorage data");
+        // Don't clear localStorage data when starting (keep OAuth2 tokens)
+        console.log("Preserving localStorage data for OAuth2 tokens");
 
         // Clean up any existing modal backdrops on page load
         cleanupModalBackdrops();
 
-        // Always start with password check
-        console.log("Starting with password check...");
+        // Check for OAuth2 callback first
+        console.log("Checking for OAuth2 callback...");
+        handleOAuth2CallbackFromURL();
+        
+        // Check if user is logged in with Google
+        console.log("Checking Google login status...");
+        if (typeof window.isAuthenticated === 'function' && !window.isAuthenticated()) {
+          console.log("User not logged in with Google, redirecting to login page...");
+          showNotificationModal(
+            "Cần đăng nhập Google",
+            "Bạn cần đăng nhập Google để truy cập bài kiểm tra.",
+            "Đăng nhập",
+            () => {
+              window.location.href = 'login.html';
+            }
+          );
+          return;
+        }
+        
+        // User is logged in, start with password check
+        console.log("User is logged in with Google, starting with password check...");
         setTimeout(() => {
           initializeQuiz();
         }, 500);
