@@ -173,8 +173,11 @@
                 <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
               </div>
               <div class="text-center">
-                <button type="submit" class="btn btn-success">
+                <button type="submit" class="btn btn-success me-2">
                   <i class="bi bi-check-circle me-2"></i>Bắt đầu làm bài
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="clearStudentInfo()">
+                  <i class="bi bi-arrow-clockwise me-2"></i>Làm lại
                 </button>
               </div>
             </form>
@@ -511,19 +514,33 @@
           onAuthSuccess: (user) => {
             console.log("✅ User authenticated:", user.displayName);
             // Close auth modal if open
-            if (authModal) {
-              authModal.hide();
+            const authModalInstance = bootstrap.Modal.getInstance(document.getElementById("authModal"));
+            if (authModalInstance) {
+              authModalInstance.hide();
             }
-            // Show student info modal
-            if (studentInfoModal) {
-              studentInfoModal.show();
+            
+            // Check if student info already exists
+            const existingStudentInfo = localStorage.getItem("studentInfo");
+            if (!existingStudentInfo) {
+              // Show student info modal only if no student info exists
+              const studentModalInstance = bootstrap.Modal.getInstance(document.getElementById("studentInfoModal"));
+              if (studentModalInstance) {
+                studentModalInstance.show();
+              }
+            } else {
+              console.log("📋 Student info already exists, proceeding to quiz");
+              // Load questions and start quiz directly
+              setTimeout(async () => {
+                await loadQuestionsAndStartQuiz();
+              }, 300);
             }
           },
           onAuthFailure: () => {
             console.log("❌ Authentication required");
             // Show auth modal
-            if (authModal) {
-              authModal.show();
+            const authModalInstance = bootstrap.Modal.getInstance(document.getElementById("authModal"));
+            if (authModalInstance) {
+              authModalInstance.show();
             }
           },
           requireAuth: true,
@@ -532,6 +549,26 @@
         
         return cleanup;
       }
+
+      // Function to clear student info and restart
+      window.clearStudentInfo = function() {
+        console.log("🔄 Clearing student info...");
+        
+        // Clear localStorage
+        localStorage.removeItem("studentInfo");
+        
+        // Clear form fields
+        document.getElementById("studentId").value = "";
+        document.getElementById("studentName").value = "";
+        
+        // Clear student display
+        document.getElementById("studentDisplay").textContent = "";
+        
+        // Reset studentInfo variable
+        studentInfo = null;
+        
+        console.log("✅ Student info cleared");
+      };
 
       // Function to clean up modal backdrops
       function cleanupModalBackdrops() {
@@ -657,25 +694,47 @@
           ).textContent = `${studentName} (${studentId})`;
           console.log("📝 Student display updated");
 
-          // Hide modal using Bootstrap instance
+          // Hide modal using multiple methods to ensure it closes
           console.log("🚪 Attempting to hide modal...");
+          
+          // Method 1: Use Bootstrap Modal instance
           const modalInstance = bootstrap.Modal.getInstance(document.getElementById("studentInfoModal"));
           if (modalInstance) {
             console.log("✅ Using Bootstrap modal instance to hide");
             modalInstance.hide();
           } else {
-            console.log("⚠️ No modal instance found, using fallback");
-            // Fallback: Hide modal manually
-            const modalElement = document.getElementById("studentInfoModal");
-            if (modalElement) {
-              modalElement.classList.remove("show");
-              modalElement.style.display = "none";
-              modalElement.setAttribute("aria-hidden", "true");
-              modalElement.removeAttribute("aria-modal");
-              console.log("✅ Modal hidden using fallback method");
-            } else {
-              console.log("❌ Modal element not found!");
+            console.log("⚠️ No modal instance found, creating new one");
+            // Create new modal instance and hide
+            const newModalInstance = new bootstrap.Modal(document.getElementById("studentInfoModal"));
+            newModalInstance.hide();
+          }
+          
+          // Method 2: Force hide using DOM manipulation
+          const modalElement = document.getElementById("studentInfoModal");
+          if (modalElement) {
+            console.log("🔧 Applying force hide method");
+            modalElement.classList.remove("show");
+            modalElement.classList.add("hide");
+            modalElement.style.display = "none";
+            modalElement.setAttribute("aria-hidden", "true");
+            modalElement.removeAttribute("aria-modal");
+            modalElement.removeAttribute("role");
+            
+            // Remove modal backdrop
+            const backdrop = document.querySelector(".modal-backdrop");
+            if (backdrop) {
+              backdrop.remove();
+              console.log("✅ Removed modal backdrop");
             }
+            
+            // Remove modal-open class from body
+            document.body.classList.remove("modal-open");
+            document.body.style.overflow = "";
+            document.body.style.paddingRight = "";
+            
+            console.log("✅ Modal force hidden");
+          } else {
+            console.log("❌ Modal element not found!");
           }
 
           // Clean up modal backdrops after hiding

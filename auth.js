@@ -5,7 +5,9 @@ import {
   signInWithPopup, 
   GoogleAuthProvider, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
 // Firebase Configuration - Sử dụng chung cho toàn bộ website
@@ -24,6 +26,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+
+// Set persistence to maintain auth state across page reloads
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('✅ Auth persistence set to LOCAL');
+  })
+  .catch((error) => {
+    console.error('❌ Error setting auth persistence:', error);
+  });
 
 // Global variables
 let currentUser = null;
@@ -134,7 +145,42 @@ window.initAuth = function(options = {}) {
 
   console.log('🔐 Initializing authentication...');
 
-  // Add auth state listener
+  // Check current auth state immediately
+  if (currentUser) {
+    console.log('✅ User already authenticated:', currentUser.displayName);
+    
+    // Update UI if needed
+    if (showUserInfo) {
+      updateUserInfoUI(currentUser);
+    }
+    
+    // Call success callback
+    if (onAuthSuccess) {
+      onAuthSuccess(currentUser);
+    }
+    
+    // Hide login required messages if any
+    hideLoginRequiredMessages();
+  } else {
+    console.log('ℹ️ No user authenticated');
+    
+    // Update UI if needed
+    if (showUserInfo) {
+      updateUserInfoUI(null);
+    }
+    
+    // Call failure callback
+    if (onAuthFailure) {
+      onAuthFailure();
+    }
+    
+    // Show login required messages if needed
+    if (requireAuth) {
+      showLoginRequiredMessages();
+    }
+  }
+
+  // Add auth state listener for future changes
   const authListener = (user) => {
     if (user) {
       console.log('✅ User authenticated:', user.displayName);
