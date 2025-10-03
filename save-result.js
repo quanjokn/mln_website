@@ -1,63 +1,15 @@
-// save-result.js - Firebase Auth + Google Sheets Integration
+// save-result.js - AuthManager + Google Sheets Integration
 const sheetId = "1kx--gwSvckfHcUMxAKcZbfxKhN_Jf7s1tQQECro1-1U";
 const apiKey = "AIzaSyBNi1lEqoeaUoTkWNYg8rqdwcvziJ7ImAw";
 const resultRange = "Result!A:F"; 
 
-// Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
-  authDomain: "mln111-cff07.firebaseapp.com",
-  databaseURL: "https://mln111-cff07-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "mln111-cff07",
-  storageBucket: "mln111-cff07.firebasestorage.app",
-  messagingSenderId: "25534326749",
-  appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
-  measurementId: "G-5ZP1K3NQN3"
-};
-
-// Firebase Auth and Google Sheets token management
+// Google Sheets token management
 let accessToken = null;
 let tokenExpiry = null;
-let firebaseAuth = null;
-let currentUser = null;
 const resultSheetName = "Result";
 
 /**
- * Initialize Firebase Auth
- */
-async function initializeFirebaseAuth() {
-    try {
-        // Import Firebase modules dynamically
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-        const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        firebaseAuth = getAuth(app);
-        
-        console.log("Firebase Auth initialized successfully");
-        
-        // Listen for auth state changes
-        onAuthStateChanged(firebaseAuth, (user) => {
-            currentUser = user;
-            if (user) {
-                console.log("User authenticated:", user.displayName);
-            } else {
-                console.log("User not authenticated");
-                accessToken = null;
-                tokenExpiry = null;
-            }
-        });
-        
-        return firebaseAuth;
-    } catch (error) {
-        console.error("Error initializing Firebase Auth:", error);
-        throw error;
-    }
-}
-
-/**
- * Get OAuth2 access token from Firebase Auth user
+ * Get OAuth2 access token using AuthManager
  * @returns {Promise<string>} Access token
  */
 async function getAccessToken() {
@@ -67,46 +19,15 @@ async function getAccessToken() {
     }
 
     try {
-        // Ensure Firebase Auth is initialized
-        if (!firebaseAuth) {
-            await initializeFirebaseAuth();
+        // Use AuthManager to get access token
+        if (window.authManager) {
+            accessToken = await window.authManager.getAccessToken();
+            tokenExpiry = Date.now() + (3600 * 1000); // 1 hour expiry
+            console.log("OAuth2 token obtained successfully via AuthManager");
+            return accessToken;
+        } else {
+            throw new Error("AuthManager not available");
         }
-
-        // Check if user is authenticated
-        if (!currentUser) {
-            throw new Error("User not logged in. Please login with Google first.");
-        }
-
-        console.log("Getting OAuth2 token for user:", currentUser.displayName);
-
-        // Get the ID token from Firebase Auth
-        const idToken = await currentUser.getIdToken();
-        
-        // Use the ID token to get access token for Google Sheets API
-        // This requires a backend service or using Google Identity Services
-        return new Promise((resolve, reject) => {
-            // Use Google Identity Services to get access token with Firebase user
-            if (typeof google !== 'undefined' && google.accounts.oauth2) {
-                google.accounts.oauth2.initTokenClient({
-                    client_id: "118407744836973155611", // Same client ID as before
-                    scope: "https://www.googleapis.com/auth/spreadsheets",
-                    callback: (response) => {
-                        if (response.error) {
-                            console.error("OAuth2 error:", response.error);
-                            reject(new Error(`OAuth2 error: ${response.error}`));
-                            return;
-                        }
-                        
-                        accessToken = response.access_token;
-                        tokenExpiry = Date.now() + (response.expires_in * 1000);
-                        console.log("OAuth2 token obtained successfully");
-                        resolve(accessToken);
-                    }
-                }).requestAccessToken();
-            } else {
-                reject(new Error("Google Identity Services not loaded"));
-            }
-        });
 
     } catch (error) {
         console.error("Error getting OAuth2 access token:", error);
@@ -242,12 +163,15 @@ async function saveQuizResult(resultData) {
             throw new Error("Missing required data: mssv and name are required");
         }
 
-        // Get Firebase user profile for additional info
-        if (currentUser) {
-            console.log("Firebase user profile:", currentUser.displayName, currentUser.email);
-            // Add email from Firebase user if not provided
-            if (!resultData.email && currentUser.email) {
-                resultData.email = currentUser.email;
+        // Get user profile from AuthManager for additional info
+        if (window.authManager) {
+            const user = window.authManager.getCurrentUser();
+            if (user) {
+                console.log("User profile:", user.displayName, user.email);
+                // Add email from user if not provided
+                if (!resultData.email && user.email) {
+                    resultData.email = user.email;
+                }
             }
         }
 
@@ -293,46 +217,18 @@ async function saveQuizResult(resultData) {
     }
 }
 
-/**
- * Load Google Identity Services for OAuth2 token
- */
-function loadGoogleIdentityServices() {
-    return new Promise((resolve, reject) => {
-        if (typeof google !== 'undefined' && google.accounts.oauth2) {
-            resolve();
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-            if (typeof google !== 'undefined' && google.accounts.oauth2) {
-                resolve();
-            } else {
-                reject(new Error('Google Identity Services failed to load'));
-            }
-        };
-        script.onerror = () => {
-            reject(new Error('Failed to load Google Identity Services'));
-        };
-        document.head.appendChild(script);
-    });
-}
-
-// Initialize Firebase Auth and Google Identity Services when script loads
+// Initialize when script loads
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // Initialize Firebase Auth
-        await initializeFirebaseAuth();
-        console.log("Firebase Auth initialized successfully");
-        
-        // Load Google Identity Services for OAuth2
-        await loadGoogleIdentityServices();
-        console.log("Google Identity Services loaded successfully");
+        // Wait for AuthManager to be ready
+        if (window.authManager) {
+            await window.authManager.waitForAuthState();
+            console.log("AuthManager ready for save-result.js");
+        } else {
+            console.warn("AuthManager not available");
+        }
     } catch (error) {
-        console.error("Failed to initialize authentication services:", error);
+        console.error("Failed to initialize save-result.js:", error);
     }
 });
 
@@ -341,6 +237,5 @@ window.saveQuizResult = saveQuizResult;
 window.getAccessToken = getAccessToken;
 window.checkExistingStudent = checkExistingStudent;
 window.addNewResult = addNewResult;
-window.initializeFirebaseAuth = initializeFirebaseAuth;
 
-console.log("✅ save-result.js loaded with Firebase Auth + OAuth2 integration");
+console.log("✅ save-result.js loaded with AuthManager + OAuth2 integration");

@@ -116,48 +116,49 @@ document.addEventListener('DOMContentLoaded', function() {
   loadTopics();
 });
 
-// Check authentication state from localStorage
-function checkAuthState() {
-  const userProfile = localStorage.getItem('userProfile');
-  if (userProfile) {
-    try {
-      const profile = JSON.parse(userProfile);
-      currentUser = {
-        uid: profile.sub,
-        displayName: profile.name,
-        email: profile.email,
-        photoURL: profile.picture
-      };
-      console.log('✅ User authenticated:', profile.name);
-      updateAuthUI(currentUser);
-    } catch (error) {
-      console.error('❌ Error parsing user profile:', error);
-      localStorage.removeItem('userProfile');
-      currentUser = null;
-      updateAuthUI(null);
-    }
-  } else {
+// Check authentication state using AuthManager
+async function checkAuthState() {
+  try {
+    // Wait for AuthManager to be ready
+    await window.authManager.waitForAuthState();
+    
+    // Listen for auth state changes
+    window.authManager.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL
+        };
+        console.log('✅ User authenticated:', user.displayName);
+        updateAuthUI(currentUser);
+      } else {
+        currentUser = null;
+        console.log('ℹ️ No user authenticated');
+        updateAuthUI(null);
+      }
+      
+      // Update online count after auth state changes
+      loadForumStats();
+    });
+  } catch (error) {
+    console.error('❌ Error checking auth state:', error);
     currentUser = null;
-    console.log('ℹ️ No user authenticated');
     updateAuthUI(null);
   }
-  
-  // Update online count after auth state changes
-  loadForumStats();
 }
 
 // Authentication Functions
-window.signOutUser = function() {
-  // Use Firebase sign out if available
-  if (window.signOutFirebase) {
-    window.signOutFirebase();
-  } else {
-    localStorage.removeItem('userProfile');
-    currentUser = null;
-    updateAuthUI(null);
+window.signOutUser = async function() {
+  try {
+    await window.authManager.signOut();
     showNotification('Đã đăng xuất thành công!', 'info');
     // Reload page to refresh data
     location.reload();
+  } catch (error) {
+    console.error('Sign out error:', error);
+    showNotification('Lỗi đăng xuất: ' + error.message, 'error');
   }
 };
 

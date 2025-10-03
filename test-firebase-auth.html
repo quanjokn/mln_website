@@ -39,60 +39,32 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyASgyPCEktt6XzKYeSy9D9rrnR2hHb0110",
-            authDomain: "mln111-cff07.firebaseapp.com",
-            databaseURL: "https://mln111-cff07-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "mln111-cff07",
-            storageBucket: "mln111-cff07.firebasestorage.app",
-            messagingSenderId: "25534326749",
-            appId: "1:25534326749:web:a896b2aa1ff6958bdaf834",
-            measurementId: "G-5ZP1K3NQN3"
-        };
+    <!-- Auth Manager -->
+    <script src="auth-manager.js"></script>
 
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { 
-            getAuth, 
-            signInWithPopup, 
-            GoogleAuthProvider, 
-            signOut as firebaseSignOut, 
-            onAuthStateChanged 
-        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    <!-- Load save-result.js for testing -->
+    <script src="save-result.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        // Global variables
-        let currentUser = null;
-
-        // Listen for auth state changes
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateAuthStatus(user);
-        });
-
-        // Test Firebase Auth
+    <script>
+        // Test AuthManager
         window.testFirebaseAuth = async function() {
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                console.log('Firebase Auth successful:', user);
-                addTestResult('✅ Firebase Auth: Đăng nhập thành công với ' + user.displayName, 'success');
+                const user = await window.authManager.signIn();
+                console.log('AuthManager sign in successful:', user);
+                addTestResult('✅ AuthManager: Đăng nhập thành công với ' + user.displayName, 'success');
             } catch (error) {
-                console.error('Firebase Auth error:', error);
-                addTestResult('❌ Firebase Auth: ' + error.message, 'danger');
+                console.error('AuthManager sign in error:', error);
+                addTestResult('❌ AuthManager: ' + error.message, 'danger');
             }
         };
 
         // Test Google Sheets
         window.testGoogleSheets = async function() {
-            if (!currentUser) {
+            const user = window.authManager.getCurrentUser();
+            if (!user) {
                 addTestResult('❌ Google Sheets: Cần đăng nhập trước', 'warning');
                 return;
             }
@@ -108,7 +80,7 @@
                 const testData = {
                     mssv: 'TEST123456',
                     name: 'Test User',
-                    email: currentUser.email,
+                    email: user.email,
                     score: 10,
                     totalQuestions: 20
                 };
@@ -131,7 +103,7 @@
         // Sign out
         window.signOut = async function() {
             try {
-                await firebaseSignOut(auth);
+                await window.authManager.signOut();
                 addTestResult('✅ Đăng xuất thành công', 'info');
             } catch (error) {
                 console.error('Sign out error:', error);
@@ -169,12 +141,15 @@
             `;
             resultsDiv.appendChild(alertDiv);
         }
-    </script>
 
-    <!-- Load save-result.js for testing -->
-    <script src="save-result.js"></script>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for AuthManager to be ready
+            await window.authManager.waitForAuthState();
+            
+            // Listen for auth state changes
+            window.authManager.onAuthStateChanged(updateAuthStatus);
+        });
+    </script>
 </body>
 </html>
