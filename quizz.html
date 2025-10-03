@@ -320,6 +320,9 @@
                 </div>
               </div>
 
+              <!-- OAuth2 Login Container -->
+              <div id="oauth2-login-container" class="mt-3"></div>
+
               <!-- Quiz Actions -->
               <div class="text-center mt-4">
                 <button
@@ -994,6 +997,16 @@
           '<i class="bi bi-hourglass-split me-2"></i>Đang xử lý...';
         submitBtn.disabled = true;
 
+        // Check OAuth2 authentication first
+        if (typeof window.isAuthenticated === 'function' && !window.isAuthenticated()) {
+          // Show OAuth2 login modal
+          showOAuth2LoginModal();
+          // Reset submit button
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          return;
+        }
+
         // Clear timers and stop time
         if (currentQuestionTimer) {
           clearInterval(currentQuestionTimer);
@@ -1141,6 +1154,85 @@
           timeSpentSeconds
         );
       }
+
+      // OAuth2 Login Modal
+      function showOAuth2LoginModal() {
+        // Create modal HTML
+        const modalHTML = `
+          <div class="modal fade" id="oauth2LoginModal" tabindex="-1" aria-labelledby="oauth2LoginModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="oauth2LoginModalLabel">
+                    <i class="bi bi-google text-primary me-2"></i>Đăng nhập Google
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                  <div class="mb-4">
+                    <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                  </div>
+                  <h6 class="mb-3">Cần đăng nhập Google để lưu kết quả</h6>
+                  <p class="text-muted mb-4">
+                    Để lưu kết quả quiz vào Google Sheets, bạn cần đăng nhập bằng tài khoản Google của mình.
+                  </p>
+                  <button type="button" class="btn btn-primary btn-lg" onclick="startOAuth2Login()">
+                    <i class="bi bi-google me-2"></i>Đăng nhập Google
+                  </button>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Remove existing modal if any
+        const existingModal = document.getElementById('oauth2LoginModal');
+        if (existingModal) {
+          existingModal.remove();
+        }
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('oauth2LoginModal'));
+        modal.show();
+
+        // Handle modal close
+        document.getElementById('oauth2LoginModal').addEventListener('hidden.bs.modal', function () {
+          this.remove();
+        });
+      }
+
+      // Start OAuth2 login from modal
+      function startOAuth2Login() {
+        // Store current quiz state for later use
+        window.pendingQuizSubmission = true;
+        
+        // Start OAuth2 flow
+        if (typeof window.startOAuth2Flow === 'function') {
+          window.startOAuth2Flow();
+        } else {
+          alert('OAuth2 không được cấu hình đúng cách');
+        }
+      }
+
+      // Auto-submit quiz after successful OAuth2 login
+      function autoSubmitAfterLogin() {
+        if (window.pendingQuizSubmission) {
+          window.pendingQuizSubmission = false;
+          // Wait a bit for UI to update, then submit
+          setTimeout(() => {
+            submitQuiz();
+          }, 1000);
+        }
+      }
+
+      // Expose functions to global scope
+      window.autoSubmitAfterLogin = autoSubmitAfterLogin;
 
       function showResults(
         finalScore,

@@ -3,124 +3,200 @@ const sheetId = "1kx--gwSvckfHcUMxAKcZbfxKhN_Jf7s1tQQECro1-1U";
 const apiKey = "AIzaSyBNi1lEqoeaUoTkWNYg8rqdwcvziJ7ImAw";
 const resultRange = "Result!A:F";
 
-const serviceAccountConfig = {
-    "type": "service_account",
-    "project_id": "n8n-basico-test",
-    "private_key_id": "eb3d906cc1476951a364db5366e08786bc6ca31c",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC0jv+OQ/zdlJ8Z\nbqbyFtarrnsUEnmf9Iq5G4w3YKK8RkSEKFCtFNjB0oS5UJe8cBLtm+Bpzq36sV1x\nXUs88vP4TU1HrBVwXCEcuzx0EmrqjQDX8lrkh+iTa3RPPEkCxZeYz2EAQH+yOErP\nsey2xq1PSE1jb4Ivvei7U6J61ZY7iYHCFwDRSkavjzgTQBciHYIpxsSHNQ3xwVZ2\nuRkjkRbZdZDRUK8rp+HqHVCrDEPJV3Tas7IF1VHT2u/KvGqxhx3tIKZlEPw7/GQf\nHid4r5XidHkHqTFmDy2Kd82t7bseGfHn5TS9J98Ec0CpdoFCB9yeK51t6e9LiTyw\nLFimv+vzAgMBAAECggEAMXc9rxmUNJZLchm89fTo0fcGtAyNspM50BWqd99rJf5w\nNe6fj5N3AL6uauCX+WGQ5fS+6e3b/yLJUU34V1XOHff7lIeiBfrPfYIUQU5saR7B\nHOhCG3rabkzRfAWtkOtWKWCjGAETmt1OLZF2oupSP7a0sOmzNmYmVO/IQzOxqVR/\nVaNsi3yio8aT+Xl9vM0NC4d1uOOXNobSaMwnERsB7KFJbPVLTgLcNIrYK0mTRwZL\neKAEbMBh0Tym4PLBEF/8UNo7+j7sCSOIGOkVmcEHp94kq6y5hqAu2SSBGrnYEuOG\nxWZlWIFsK82YUckGypbw11cU0eBGm2s4psufuhFVCQKBgQD1m/7CawuLxmN8sF7X\nTl9V/qSZitZUh9VJr7boj+uAYl9kOUJCv3YcNgW+KzbKMQtShEuqV1jwKStnkP75\nYipMrdl85QNgOtorMIy+8m78/QOENTJvqjOql4t+G9ip+d6aR8BHyfUjk5Ax0ZoA\nMS0lPP1VjJsBV74zvHx5re0oGwKBgQC8Mn0TWQvj9i2q44ERMsxwq9JEpU35+wrM\nfDOh2QxBA3EkINGHpPnBbzz7oXrbDHkDF3h2Qfnhu5bbR0w3splw15zQXW2roXA5\n2jY0hQuvpZL/VUN5XGqzVGbdPMpDiophdSreJrzrt1rIao10i6EDnVLASrCVp73x\n45Bo6Sq5CQKBgQDXkm3O0wm1SxGzNVJpA97lqbVrFtL8KqToIhQWl4uKic1UOHWS\nBF50cG4l9eQHH3jimj+XaUcks93m7vr8hE7AMq770j5eTgmDcv918W+9GY3mkpKM\nNAVZK95Bd8t5lVjubR+1YuuIqFIdh+z1UjRfxOJOHjVGvm6xFjTiz+eiFQKBgFud\nuIXSs5cmINUwK4TT1fKDsrj4QB2RuJATZo9DulNr+Yg88cO27F7eaDGXSteYGtEG\ne/4V4C+jwqy86L20lD36uLw2v0zuKlP/hqPKoQXA9O6X82EBPHBQhkLtdQmsR/Fp\nuJStBws5F1i5hmNWFexMihxSP+Sa5Dz9Ky/nUoUBAoGBAKmhpZxQj98YnoebFqMp\noUDZpxltqqe3Brs+OPORPhHt+nr0lA+e1jPnbZ7JWFja1RyZJTwRHuBJGKq7cy+O\nwZUA4K5bT/o9kOiIIgt5j1Q4fQFgsGES2ww5YHJ2cuDu9GGtr5ld0ulgrauEQ3ZO\nzOf9y/0CE6sx0glrvJ66sJIV\n-----END PRIVATE KEY-----\n",
-    "client_email": "mln-slot3@n8n-basico-test.iam.gserviceaccount.com",
-    "client_id": "118407744836973155611",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mln-slot3%40n8n-basico-test.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
-  };
+// OAuth2 Configuration
+const oauth2Config = {
+    clientId: "437184391144-ikovnqkf4i44v4jhsqvhvisi3ov3jtod.apps.googleusercontent.com",
+    clientSecret: "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", // Cần thêm client secret
+    redirectUri: window.location.origin + window.location.pathname,
+    scope: "https://www.googleapis.com/auth/spreadsheets",
+    authUrl: "https://accounts.google.com/o/oauth2/auth",
+    tokenUrl: "https://oauth2.googleapis.com/token"
+};
 
-// JWT token for authentication
+// OAuth2 token storage
 let accessToken = null;
 let tokenExpiry = null;
+let refreshToken = null;
 const resultSheetName = "Result";
 
 /**
- * Generate JWT token for service account authentication
+ * Check if user is authenticated with OAuth2
+ * @returns {boolean} Authentication status
+ */
+function isAuthenticated() {
+    return accessToken && tokenExpiry && Date.now() < tokenExpiry;
+}
+
+/**
+ * Get stored OAuth2 tokens from localStorage
+ */
+function loadStoredTokens() {
+    try {
+        const stored = localStorage.getItem('google_oauth_tokens');
+        if (stored) {
+            const tokens = JSON.parse(stored);
+            accessToken = tokens.accessToken;
+            tokenExpiry = tokens.tokenExpiry;
+            refreshToken = tokens.refreshToken;
+        }
+    } catch (error) {
+        console.error("Error loading stored tokens:", error);
+    }
+}
+
+/**
+ * Save OAuth2 tokens to localStorage
+ */
+function saveTokens() {
+    try {
+        const tokens = {
+            accessToken,
+            tokenExpiry,
+            refreshToken
+        };
+        localStorage.setItem('google_oauth_tokens', JSON.stringify(tokens));
+    } catch (error) {
+        console.error("Error saving tokens:", error);
+    }
+}
+
+/**
+ * Clear OAuth2 tokens
+ */
+function clearTokens() {
+    accessToken = null;
+    tokenExpiry = null;
+    refreshToken = null;
+    localStorage.removeItem('google_oauth_tokens');
+}
+
+/**
+ * Start OAuth2 authorization flow
+ */
+function startOAuth2Flow() {
+    const params = new URLSearchParams({
+        client_id: oauth2Config.clientId,
+        redirect_uri: oauth2Config.redirectUri,
+        scope: oauth2Config.scope,
+        response_type: 'code',
+        access_type: 'offline',
+        prompt: 'consent'
+    });
+
+    const authUrl = `${oauth2Config.authUrl}?${params.toString()}`;
+    window.location.href = authUrl;
+}
+
+/**
+ * Handle OAuth2 callback and exchange code for tokens
+ * @param {string} code - Authorization code from callback
  * @returns {Promise<string>} Access token
  */
-async function getAccessToken() {
-    // Check if we have a valid token
-    if (accessToken && tokenExpiry && Date.now() < tokenExpiry) {
-        return accessToken;
-    }
-
+async function handleOAuth2Callback(code) {
     try {
-        // Create JWT header
-        const header = {
-            alg: "RS256",
-            typ: "JWT"
-        };
-
-        // Create JWT payload
-        const now = Math.floor(Date.now() / 1000);
-        const payload = {
-            iss: serviceAccountConfig.client_email,
-            scope: "https://www.googleapis.com/auth/spreadsheets",
-            aud: serviceAccountConfig.token_uri,
-            iat: now,
-            exp: now + 3600 // 1 hour
-        };
-
-        // Encode header and payload
-        const encodedHeader = btoa(JSON.stringify(header)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-        const encodedPayload = btoa(JSON.stringify(payload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-
-        // Create signature
-        const signatureInput = `${encodedHeader}.${encodedPayload}`;
-
-        // Import the private key
-        // Convert PEM format to ArrayBuffer
-        const pemHeader = "-----BEGIN PRIVATE KEY-----";
-        const pemFooter = "-----END PRIVATE KEY-----";
-        const pemContents = serviceAccountConfig.private_key
-            .replace(pemHeader, "")
-            .replace(pemFooter, "")
-            .replace(/\s/g, "");
-
-        const binaryDer = atob(pemContents);
-        const privateKeyBuffer = new Uint8Array(binaryDer.length);
-        for (let i = 0; i < binaryDer.length; i++) {
-            privateKeyBuffer[i] = binaryDer.charCodeAt(i);
-        }
-
-        const privateKey = await crypto.subtle.importKey(
-            "pkcs8",
-            privateKeyBuffer,
-            {
-                name: "RSASSA-PKCS1-v1_5",
-                hash: "SHA-256"
-            },
-            false,
-            ["sign"]
-        );
-
-        // Sign the JWT
-        const signature = await crypto.subtle.sign(
-            "RSASSA-PKCS1-v1_5",
-            privateKey,
-            new TextEncoder().encode(signatureInput)
-        );
-
-        // Encode signature
-        const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)))
-            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-
-        const jwt = `${signatureInput}.${encodedSignature}`;
-
-        // Exchange JWT for access token
-        const response = await fetch(serviceAccountConfig.token_uri, {
+        const response = await fetch(oauth2Config.tokenUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                assertion: jwt
+                client_id: oauth2Config.clientId,
+                client_secret: oauth2Config.clientSecret,
+                code: code,
+                grant_type: 'authorization_code',
+                redirect_uri: oauth2Config.redirectUri
             })
         });
 
         if (!response.ok) {
-            throw new Error(`Token request failed: ${response.status}`);
+            const errorText = await response.text();
+            console.error("Token exchange failed:", errorText);
+            throw new Error(`Token exchange failed: ${response.status} - ${errorText}`);
+        }
+
+        const tokenData = await response.json();
+        accessToken = tokenData.access_token;
+        refreshToken = tokenData.refresh_token;
+        tokenExpiry = Date.now() + (tokenData.expires_in * 1000) - 60000; // 1 minute buffer
+
+        saveTokens();
+        return accessToken;
+
+    } catch (error) {
+        console.error("Error handling OAuth2 callback:", error);
+        throw error;
+    }
+}
+
+/**
+ * Refresh OAuth2 access token using refresh token
+ * @returns {Promise<string>} New access token
+ */
+async function refreshAccessToken() {
+    if (!refreshToken) {
+        throw new Error("No refresh token available");
+    }
+
+    try {
+        const response = await fetch(oauth2Config.tokenUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                client_id: oauth2Config.clientId,
+                client_secret: oauth2Config.clientSecret,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Token refresh failed:", errorText);
+            throw new Error(`Token refresh failed: ${response.status} - ${errorText}`);
         }
 
         const tokenData = await response.json();
         accessToken = tokenData.access_token;
         tokenExpiry = Date.now() + (tokenData.expires_in * 1000) - 60000; // 1 minute buffer
 
+        saveTokens();
         return accessToken;
 
     } catch (error) {
-        console.error("Error getting access token:", error);
+        console.error("Error refreshing access token:", error);
+        clearTokens();
         throw error;
     }
+}
+
+/**
+ * Get valid OAuth2 access token
+ * @returns {Promise<string>} Access token
+ */
+async function getAccessToken() {
+    // Load tokens from storage if not already loaded
+    if (!accessToken) {
+        loadStoredTokens();
+    }
+
+    // Check if we have a valid token
+    if (isAuthenticated()) {
+        return accessToken;
+    }
+
+    // Try to refresh token if we have refresh token
+    if (refreshToken) {
+        try {
+            return await refreshAccessToken();
+        } catch (error) {
+            console.log("Token refresh failed, need to re-authenticate");
+        }
+    }
+
+    // Need to start OAuth2 flow
+    throw new Error("Not authenticated. Please login first.");
 }
 
 /**
@@ -138,18 +214,32 @@ async function saveQuizResult(resultData) {
             throw new Error("Missing required data: mssv and name are required");
         }
 
-        // Check if service account is configured
-        if (!serviceAccountConfig.client_email || serviceAccountConfig.client_email.includes('your-service-account')) {
-            console.log("Service account not configured, saving locally");
+        // Check if OAuth2 is configured
+        if (!oauth2Config.clientId || oauth2Config.clientId.includes('YOUR_OAUTH2_CLIENT_ID') || 
+            !oauth2Config.clientSecret || oauth2Config.clientSecret.includes('your-client-secret')) {
+            console.log("OAuth2 not configured, saving locally");
             return {
                 success: true,
-                message: "Result saved locally - Service account not configured",
+                message: "Result saved locally - OAuth2 not configured",
                 data: resultData
             };
         }
 
         // Get access token
-        const token = await getAccessToken();
+        let token;
+        try {
+            token = await getAccessToken();
+        } catch (error) {
+            if (error.message.includes("Not authenticated")) {
+                return {
+                    success: false,
+                    error: "Bạn cần đăng nhập Google để lưu kết quả. Vui lòng nhấn nút 'Đăng nhập Google' trước.",
+                    action: "login_required",
+                    data: resultData
+                };
+            }
+            throw error;
+        }
 
         // Check if student already exists
         const existingStudent = await checkExistingStudent(resultData.mssv, resultData.name);
@@ -455,6 +545,104 @@ function testSaveResultLoaded() {
     return true;
 }
 
+// OAuth2 UI Functions
+/**
+ * Show login button if not authenticated
+ */
+function showLoginButton() {
+    const loginContainer = document.getElementById('oauth2-login-container');
+    if (loginContainer) {
+        loginContainer.innerHTML = `
+            <div class="alert alert-info">
+                <h5><i class="bi bi-google"></i> Đăng nhập Google</h5>
+                <p>Bạn cần đăng nhập Google để lưu kết quả quiz vào Google Sheets.</p>
+                <button class="btn btn-primary" onclick="startOAuth2Flow()">
+                    <i class="bi bi-google"></i> Đăng nhập Google
+                </button>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Show logout button if authenticated
+ */
+function showLogoutButton() {
+    const loginContainer = document.getElementById('oauth2-login-container');
+    if (loginContainer) {
+        loginContainer.innerHTML = `
+            <div class="alert alert-success">
+                <h5><i class="bi bi-check-circle"></i> Đã đăng nhập Google</h5>
+                <p>Bạn đã đăng nhập thành công. Có thể lưu kết quả quiz.</p>
+                <button class="btn btn-outline-danger" onclick="logoutGoogle()">
+                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </button>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Logout from Google
+ */
+function logoutGoogle() {
+    clearTokens();
+    showLoginButton();
+    console.log("Logged out from Google");
+}
+
+/**
+ * Check authentication status and update UI
+ */
+function updateAuthUI() {
+    loadStoredTokens();
+    if (isAuthenticated()) {
+        showLogoutButton();
+    } else {
+        showLoginButton();
+    }
+}
+
+/**
+ * Handle OAuth2 callback from URL parameters
+ */
+function handleOAuth2CallbackFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const error = urlParams.get('error');
+
+    if (error) {
+        console.error("OAuth2 error:", error);
+        alert("Đăng nhập thất bại: " + error);
+        return;
+    }
+
+    if (code) {
+        handleOAuth2Callback(code).then(() => {
+            console.log("OAuth2 login successful");
+            // Remove code from URL
+            const newUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+            updateAuthUI();
+            alert("Đăng nhập Google thành công!");
+            
+            // Auto-submit quiz if pending
+            if (typeof window.autoSubmitAfterLogin === 'function') {
+                window.autoSubmitAfterLogin();
+            }
+        }).catch(error => {
+            console.error("OAuth2 callback error:", error);
+            alert("Đăng nhập thất bại: " + error.message);
+        });
+    }
+}
+
+// Initialize OAuth2 on page load
+document.addEventListener('DOMContentLoaded', function() {
+    handleOAuth2CallbackFromURL();
+    updateAuthUI();
+});
+
 // Expose global functions
 window.saveQuizResult = saveQuizResult;
 window.checkExistingStudent = checkExistingStudent;
@@ -463,6 +651,12 @@ window.updateExistingResult = updateExistingResult;
 window.getAllResults = getAllResults;
 window.testSaveResult = testSaveResult;
 window.testSaveResultLoaded = testSaveResultLoaded;
+
+// OAuth2 functions
+window.startOAuth2Flow = startOAuth2Flow;
+window.logoutGoogle = logoutGoogle;
+window.updateAuthUI = updateAuthUI;
+window.isAuthenticated = isAuthenticated;
 
 // Log that the script has loaded
 console.log("save-result.js: All functions exported to window object");
