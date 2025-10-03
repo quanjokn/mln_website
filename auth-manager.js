@@ -11,6 +11,16 @@ const firebaseConfig = {
     measurementId: "G-5ZP1K3NQN3"
 };
 
+// Import Firebase modules
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { 
+    getAuth, 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    signOut, 
+    onAuthStateChanged 
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
 class AuthManager {
     constructor() {
         this.auth = null;
@@ -36,28 +46,17 @@ class AuthManager {
 
     async _doInitialize() {
         try {
-            // Import Firebase modules dynamically
-            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-            const { 
-                getAuth, 
-                signInWithPopup, 
-                GoogleAuthProvider, 
-                signOut, 
-                onAuthStateChanged 
-            } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-
-            // Store Firebase functions for later use
-            this.signInWithPopup = signInWithPopup;
-            this.firebaseSignOut = signOut;
-            this.onAuthStateChanged = onAuthStateChanged;
+            console.log('🔄 Initializing AuthManager...');
 
             // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             this.auth = getAuth(app);
             this.provider = new GoogleAuthProvider();
 
+            console.log('✅ Firebase initialized successfully');
+
             // Listen for auth state changes
-            this.onAuthStateChanged(this.auth, (user) => {
+            onAuthStateChanged(this.auth, (user) => {
                 this.currentUser = user;
                 this._updateUserProfile(user);
                 this._notifyListeners(user);
@@ -125,7 +124,7 @@ class AuthManager {
         }
 
         try {
-            const result = await this.signInWithPopup(this.auth, this.provider);
+            const result = await signInWithPopup(this.auth, this.provider);
             const user = result.user;
             console.log('✅ Sign in successful:', user.displayName);
             return user;
@@ -142,7 +141,7 @@ class AuthManager {
         }
 
         try {
-            await this.firebaseSignOut(this.auth);
+            await signOut(this.auth);
             console.log('✅ Sign out successful');
         } catch (error) {
             console.error('❌ Sign out error:', error);
