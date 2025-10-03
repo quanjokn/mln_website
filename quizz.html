@@ -71,39 +71,6 @@
       </div>
     </nav>
 
-    <!-- Gmail Login Modal -->
-    <div
-      class="modal fade"
-      id="gmailLoginModal"
-      tabindex="-1"
-      aria-labelledby="gmailLoginModalLabel"
-      aria-hidden="true"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-primary text-white">
-            <h5 class="modal-title" id="gmailLoginModalLabel">
-              <i class="bi bi-google me-2"></i>Đăng nhập Google
-            </h5>
-          </div>
-          <div class="modal-body text-center">
-            <div class="mb-4">
-              <i class="bi bi-google text-primary" style="font-size: 4rem;"></i>
-            </div>
-            <h6 class="mb-3">Đăng nhập Google để tiếp tục</h6>
-            <p class="text-muted mb-4">
-              Bạn cần đăng nhập Google để có thể làm bài kiểm tra và lưu kết quả.
-            </p>
-            <button type="button" class="btn btn-primary btn-lg" onclick="startGmailLogin()">
-              <i class="bi bi-google me-2"></i>Đăng nhập Google
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Password Modal -->
     <div
       class="modal fade"
@@ -293,11 +260,6 @@
                     <small class="text-light">
                       <i class="bi bi-person me-1"></i>
                       <span id="studentDisplay">Sinh viên: </span>
-                    </small>
-                    <br>
-                    <small class="text-light">
-                      <i class="bi bi-google me-1"></i>
-                      <span id="gmailDisplay">Google: Chưa đăng nhập</span>
                     </small>
                   </div>
                 </div>
@@ -515,9 +477,8 @@
       const QUESTION_TIME_LIMIT = 20;
 
       // Global variables
-      let gmailLoginModal, passwordModal, studentInfoModal;
+      let passwordModal, studentInfoModal;
 
-      window.gmailLoginModal = gmailLoginModal;
       window.passwordModal = passwordModal;
       window.studentInfoModal = studentInfoModal;
 
@@ -537,9 +498,6 @@
         cleanupModalBackdrops();
 
         // Initialize modals
-        gmailLoginModal = new bootstrap.Modal(
-          document.getElementById("gmailLoginModal")
-        );
         passwordModal = new bootstrap.Modal(
           document.getElementById("passwordModal")
         );
@@ -547,8 +505,8 @@
           document.getElementById("studentInfoModal")
         );
 
-        // Show Gmail login modal first
-        gmailLoginModal.show();
+        // Show password modal first
+        passwordModal.show();
 
         // Setup event listeners
         setupEventListeners();
@@ -1249,15 +1207,6 @@
         });
       }
 
-      // Start Gmail login from modal
-      function startGmailLogin() {
-        // Start OAuth2 flow
-        if (typeof window.startOAuth2Flow === 'function') {
-          window.startOAuth2Flow();
-        } else {
-        }
-      }
-
       // Start OAuth2 login from modal (for quiz submission)
       function startOAuth2Login() {
         // Store current quiz state for later use
@@ -1268,33 +1217,6 @@
           window.startOAuth2Flow();
         } else {
         }
-      }
-
-      // Handle successful Gmail login
-      function handleGmailLoginSuccess() {
-        // Update Gmail display status
-        const gmailDisplay = document.getElementById('gmailDisplay');
-        if (gmailDisplay) {
-          gmailDisplay.textContent = 'Google: Đã đăng nhập';
-          gmailDisplay.style.color = '#28a745';
-        }
-        
-        // Hide Gmail login modal
-        if (gmailLoginModal) {
-          gmailLoginModal.hide();
-        }
-        
-        // Clean up modal backdrop
-        setTimeout(() => {
-          cleanupModalBackdrops();
-        }, 300);
-        
-        // Show password modal next
-        setTimeout(() => {
-          if (passwordModal) {
-            passwordModal.show();
-          }
-        }, 500);
       }
 
       // Auto-submit quiz after successful OAuth2 login
@@ -1310,7 +1232,6 @@
 
       // Expose functions to global scope
       window.autoSubmitAfterLogin = autoSubmitAfterLogin;
-      window.handleGmailLoginSuccess = handleGmailLoginSuccess;
 
       function showResults(
         finalScore,
@@ -1556,8 +1477,8 @@
         // Clean up any existing modal backdrops on page load
         cleanupModalBackdrops();
 
-        // Always start with Gmail login
-        console.log("Starting with Gmail login...");
+        // Always start with password check
+        console.log("Starting with password check...");
         setTimeout(() => {
           initializeQuiz();
         }, 500);

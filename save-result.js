@@ -613,7 +613,6 @@ function handleOAuth2CallbackFromURL() {
 
     if (error) {
         console.error("OAuth2 error:", error);
-        alert("Đăng nhập thất bại: " + error);
         return;
     }
 
@@ -625,18 +624,12 @@ function handleOAuth2CallbackFromURL() {
             window.history.replaceState({}, document.title, newUrl);
             updateAuthUI();
             
-            // Handle Gmail login success for quiz flow
-            if (typeof window.handleGmailLoginSuccess === 'function') {
-                window.handleGmailLoginSuccess();
-            }
-            
             // Auto-submit quiz if pending
             if (typeof window.autoSubmitAfterLogin === 'function') {
                 window.autoSubmitAfterLogin();
             }
         }).catch(error => {
             console.error("OAuth2 callback error:", error);
-            alert("Đăng nhập thất bại: " + error.message);
         });
     }
 }
