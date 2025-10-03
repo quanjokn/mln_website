@@ -1339,6 +1339,7 @@
           if (isAuthenticated) {
             const user = window.authManager.getCurrentUser();
             console.log("User authenticated:", user.displayName);
+            console.log("Google OAuth2 token available for Sheets API");
             return true;
           }
           return false;
@@ -1396,7 +1397,7 @@
         // Clean up any existing modal backdrops on page load
         cleanupModalBackdrops();
 
-        // Always start with password check
+        // Always start with password check and student info input
         console.log("Starting with password check...");
         setTimeout(() => {
           initializeQuiz();

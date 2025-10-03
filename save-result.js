@@ -163,15 +163,13 @@ async function saveQuizResult(resultData) {
             throw new Error("Missing required data: mssv and name are required");
         }
 
-        // Get user profile from AuthManager for additional info
+        // Get user profile from AuthManager for OAuth2 token only
         if (window.authManager) {
             const user = window.authManager.getCurrentUser();
             if (user) {
-                console.log("User profile:", user.displayName, user.email);
-                // Add email from user if not provided
-                if (!resultData.email && user.email) {
-                    resultData.email = user.email;
-                }
+                console.log("Using Google OAuth2 token for Sheets API access");
+                // Only use Google account for OAuth2 token, not for student info
+                // Student info comes from the form input
             }
         }
 

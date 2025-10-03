@@ -58,8 +58,15 @@
                                 <h4 class="mb-3">Chào mừng bạn!</h4>
                                 <p class="text-muted mb-4">
                                     Để tham gia bài kiểm tra kiến thức về Tư tưởng Hồ Chí Minh, 
-                                    vui lòng đăng nhập bằng tài khoản Google của bạn.
+                                    vui lòng đăng nhập bằng tài khoản Google của bạn để xác thực và lưu kết quả.
                                 </p>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>
+                                        Đăng nhập Google chỉ để xác thực và lưu kết quả vào hệ thống. 
+                                        Bạn vẫn cần nhập thông tin sinh viên khi làm bài.
+                                    </small>
+                                </div>
                                 
                                 <!-- Google Sign In Button -->
                                 <div class="mb-4">
@@ -175,6 +182,22 @@
             document.getElementById('userName').textContent = profile.name;
             document.getElementById('userEmail').textContent = profile.email;
             document.getElementById('userAvatar').src = profile.picture;
+            
+            // Show redirect message
+            const userInfoDiv = document.getElementById('userInfo');
+            const redirectMessage = document.createElement('div');
+            redirectMessage.className = 'alert alert-info mt-3';
+            redirectMessage.innerHTML = `
+                <i class="bi bi-arrow-right-circle me-2"></i>
+                Đăng nhập Google thành công! Đang chuyển hướng đến trang kiểm tra...
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Bạn sẽ được chuyển đến trang kiểm tra và nhập thông tin sinh viên...
+                    </small>
+                </div>
+            `;
+            userInfoDiv.appendChild(redirectMessage);
         }
 
         // Show error message
@@ -184,10 +207,10 @@
             document.getElementById('errorText').textContent = message;
         }
 
-        // Proceed to quiz
+        // Proceed to quiz (manual redirect)
         function proceedToQuiz() {
             if (userProfile) {
-                // Redirect to quiz page
+                // Redirect to quiz page immediately
                 window.location.href = 'quizz.html';
             } else {
                 showError("Vui lòng đăng nhập trước khi tiếp tục.");
@@ -211,6 +234,12 @@
                     };
                     userProfile = profile;
                     showUserInfo(profile);
+                    
+                    // Auto redirect to quiz after successful login
+                    setTimeout(() => {
+                        console.log('Redirecting to quiz page...');
+                        window.location.href = 'quizz.html';
+                    }, 1500); // Wait 1.5 seconds to show success message
                 } else {
                     userProfile = null;
                     document.getElementById('userInfo').classList.add('d-none');
