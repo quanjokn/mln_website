@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kiểm tra kiến thức - Tư tưởng Hồ Chí Minh</title>
+    <link rel="icon" type="image/x-icon" href="./pic/icons8-book-16.png" />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link href="style.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="pic/favicon.png" />
+    <!-- Firebase Authentication -->
+    <script type="module" src="auth.js"></script>
+    <script src="script.js"></script>
+    <script src="script-sheet-api.js"></script>
+    <script src="save-result.js"></script>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">
+          Kiểm tra kiến thức về Tư tưởng Hồ Chí Minh
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">
+                <i class="bi bi-house-door me-1"></i>Trang chủ
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="quizz.html">
+                <i class="bi bi-question-circle me-1"></i>Kiểm tra
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="forum.html">
+                <i class="bi bi-chat-dots me-1"></i>Diễn đàn
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="chatbox.html">
+                <i class="bi bi-robot"></i>Chat AI
+              </a>
+            </li>
+            <li class="nav-item">
+              <div class="user-info">
+                <!-- User info will be inserted here -->
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Authentication Required Modal -->
+    <div
+      class="modal fade"
+      id="authModal"
+      tabindex="-1"
+      aria-labelledby="authModalLabel"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-classical text-white">
+            <h5 class="modal-title" id="authModalLabel">
+              <i class="bi bi-shield-check me-2"></i>Đăng nhập để kiểm tra
+            </h5>
+          </div>
+          <div class="modal-body text-center py-4">
+            <div class="mb-4">
+              <i class="bi bi-person-check text-classical" style="font-size: 4rem"></i>
+            </div>
+            <h5 class="mb-3">Chào mừng đến với bài kiểm tra!</h5>
+            <p class="mb-4">
+              Để tham gia kiểm tra kiến thức về Tư tưởng Hồ Chí Minh, 
+              bạn cần đăng nhập bằng tài khoản Google của mình.
+            </p>
+            <button class="btn btn-danger btn-lg" onclick="signInWithGoogle()">
+              <i class="bi bi-google me-2"></i>Đăng nhập với Google
+            </button>
+            <p class="mt-3 small text-muted">
+              Việc đăng nhập giúp chúng tôi lưu kết quả và theo dõi tiến độ học tập của bạn.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Info Modal -->
+    <div
+      class="modal fade"
+      id="studentInfoModal"
+      tabindex="-1"
+      aria-labelledby="studentInfoModalLabel"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title" id="studentInfoModalLabel">
+              <i class="bi bi-person-badge me-2"></i>Thông tin sinh viên
+            </h5>
+          </div>
+          <div class="modal-body">
+            <div class="text-center mb-4">
+              <i
+                class="bi bi-person-check text-success"
+                style="font-size: 3rem"
+              ></i>
+              <h6 class="mt-2">Vui lòng nhập thông tin của bạn</h6>
+            </div>
+            <form id="studentInfoForm">
+              <div class="mb-3">
+                <label for="studentId" class="form-label"
+                  >Mã số sinh viên:</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="studentId"
+                  placeholder="Nhập mã số sinh viên (ví dụ: SE123456)"
+                  required
+                  pattern="^[Ss][a-zA-Z]\d{6}$"
+                />
+                <div class="invalid-feedback">
+                  Mã số sinh viên không đúng định dạng.
+                </div>
+                <div class="form-text">
+                  <i class="bi bi-info-circle me-1"></i>
+                  ví dụ: SE123456, ss789012 
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="studentName" class="form-label">Họ và tên:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="studentName"
+                  placeholder="Nhập họ và tên"
+                  required
+                />
+                <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-success">
+                  <i class="bi bi-check-circle me-2"></i>Bắt đầu làm bài
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-5 mt-4">
+      <!-- Header Section -->
+      <section class="py-5 bg-classical text-white">
+        <div class="container">
+          <div class="row">
+            <div class="col-12 text-center">
+              <h1 class="display-4 mb-3" data-aos="fade-up">
+                <i class="bi bi-trophy me-3"></i>
+                Kiểm tra kiến thức
+              </h1>
+              <p class="lead mb-4" data-aos="fade-up" data-aos-delay="200">
+                Thử thách bản thân với những câu hỏi về Tư tưởng Hồ Chí Minh
+              </p>
+              <div
+                class="quiz-stats d-flex justify-content-center gap-4"
+                data-aos="fade-up"
+                data-aos-delay="400"
+              >
+                <div class="stat-item">
+                  <div class="h4 mb-0" id="totalQuestions">20</div>
+                  <small>Câu hỏi</small>
+                </div>
+                <div class="stat-item">
+                  <div class="h4 mb-0" id="currentScore">0</div>
+                  <small>Điểm số</small>
+                </div>
+                <div class="stat-item">
+                  <div class="h4 mb-0" id="timeSpent">00:00</div>
+                  <small>Thời gian</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Classic Quiz Section (giữ nguyên) -->
+      <section id="classicQuizSection" class="py-5">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <!-- Quiz Card -->
+              <div class="card shadow-lg" data-aos="fade-up">
+                <div class="card-header bg-classical text-white">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <h4 class="mb-0">
+                      <i class="bi bi-question-circle me-2"></i>
+                      Câu hỏi <span id="questionNumber">1</span>
+                    </h4>
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="progress" style="width: 200px; height: 8px">
+                        <div
+                          class="progress-bar"
+                          id="progressBar"
+                          style="width: 10%"
+                        ></div>
+                      </div>
+                      <div class="timer-display">
+                        <i class="bi bi-clock me-1"></i>
+                        <span id="questionTimer">20</span>s
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <small class="text-light">
+                      <i class="bi bi-person me-1"></i>
+                      <span id="studentDisplay">Sinh viên: </span>
+                    </small>
+                  </div>
+                </div>
+
+                <div class="card-body p-4">
+                  <!-- Question -->
+                  <div id="questionContainer">
+                    <h5 class="question-text mb-4" id="questionText">
+                      Đang tải câu hỏi...
+                    </h5>
+
+                    <!-- Options -->
+                    <div class="options-container" id="optionsContainer">
+                      <!-- Options will be populated by JavaScript -->
+                    </div>
+                  </div>
+
+                  <!-- Quiz Controls -->
+                  <div
+                    class="quiz-controls mt-4 d-flex justify-content-between"
+                  >
+                    <button
+                      class="btn btn-outline-secondary"
+                      id="prevBtn"
+                      disabled
+                    >
+                      <i class="bi bi-arrow-left me-2"></i>Câu trước
+                    </button>
+
+                    <!-- <div class="middle-controls">
+                      <button class="btn btn-warning me-2" id="skipBtn">
+                        <i class="bi bi-skip-forward me-1"></i>Bỏ qua
+                      </button>
+                      <button class="btn btn-info" id="hintBtn">
+                        <i class="bi bi-lightbulb me-1"></i>Gợi ý
+                      </button>
+                    </div> -->
+
+                    <button class="btn btn-classical" id="nextBtn" disabled>
+                      Câu tiếp <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                  </div>
+
+                  <!-- Hint Container -->
+                  <!-- <div class="alert alert-info mt-3 d-none" id="hintContainer">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    <span id="hintText"></span>
+                  </div> -->
+
+                  <!-- Explanation Container -->
+                  <!-- <div
+                    class="alert alert-success mt-3 d-none"
+                    id="explanationContainer"
+                  >
+                    <h6><i class="bi bi-check-circle me-2"></i>Giải thích:</h6>
+                    <p class="mb-0" id="explanationText"></p>
+                  </div> -->
+                </div>
+              </div>
+
+              <!-- Quiz Actions -->
+              <div class="text-center mt-4">
+                <button
+                  class="btn btn-success btn-lg me-3"
+                  id="submitBtn"
+                  style="display: none"
+                >
+                  <i class="bi bi-check-lg me-2"></i>Nộp bài
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  id="restartBtn"
+                  style="display: none"
+                >
+                  <i class="bi bi-arrow-clockwise me-2"></i>Làm lại
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <section class="py-5 d-none" id="resultsSection">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <div class="card shadow-lg border-success">
+                <div class="card-header bg-success text-white text-center">
+                  <h3 class="mb-0">
+                    <i class="bi bi-trophy me-2"></i>
+                    Kết quả bài kiểm tra
+                  </h3>
+                </div>
+                <div class="card-body p-4">
+                  <!-- Score Display -->
+                  <div class="text-center mb-4">
+                    <div class="display-1 text-success mb-2" id="finalScore">
+                      0
+                    </div>
+                    <p class="lead" id="totalScoreText">trên 0 điểm</p>
+                    <div class="h5" id="finalMessage">Xuất sắc!</div>
+                  </div>
+
+                  <!-- Detailed Results -->
+                  <div class="row text-center">
+                    <div class="col-md-3">
+                      <div class="bg-light p-3 rounded">
+                        <div class="h4 text-success" id="correctAnswers">0</div>
+                        <small>Trả lời đúng</small>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="bg-light p-3 rounded">
+                        <div class="h4 text-danger" id="incorrectAnswers">
+                          0
+                        </div>
+                        <small>Trả lời sai</small>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="bg-light p-3 rounded">
+                        <div class="h4 text-warning" id="skippedAnswers">0</div>
+                        <small>Bỏ qua</small>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="bg-light p-3 rounded">
+                        <div class="h4 text-info" id="timeSpentDisplay">
+                          00:00
+                        </div>
+                        <small>Thời gian làm bài</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Save Status -->
+                  <div
+                    class="alert alert-info mt-3"
+                    id="saveStatus"
+                    style="display: none"
+                  >
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span id="saveStatusText">Đang lưu kết quả...</span>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="text-center mt-4">
+                    <button
+                      class="btn btn-classical btn-lg me-3"
+                      onclick="location.reload()"
+                    >
+                      <i class="bi bi-arrow-clockwise me-2"></i>Làm lại
+                    </button>
+                    <a
+                      href="index.html"
+                      class="btn btn-outline-secondary btn-lg"
+                    >
+                      <i class="bi bi-house-door me-2"></i>Về trang chủ
+                    </a>
+                  </div>
+
+                  <!-- Question Review Section -->
+                  <div class="mt-5" id="questionReviewSection">
+                    <h4 class="mb-4">
+                      <i class="bi bi-list-check me-2"></i>
+                      Chi tiết câu hỏi và đáp án
+                    </h4>
+                    <div id="questionReviewList">
+                      <!-- Questions will be populated here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Tư tưởng Hồ Chí Minh</h6>
+            <p class="small mb-0">
+              Học tập và áp dụng tư tưởng của Chủ tịch Hồ Chí Minh vào đời sống
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <small>&copy; 2024 - Dự án học tập MLN111</small>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Custom JS -->
+
+    <script>
+      // Initialize AOS
+      AOS.init({
+        duration: 1000,
+        once: true,
+      });
+
+      // Quiz configuration
+      const QUESTION_TIME_LIMIT = 20;
+
+      // Global variables
+      let authModal, studentInfoModal;
+
+      window.authModal = authModal;
+      window.studentInfoModal = studentInfoModal;
+
+      let currentQuestionTimer = null;
+      let studentInfo = null;
+
+      // Quiz questions will be loaded from script.js (comprehensiveQuizData)
+      // This serves as fallback data if API fails
+      // const questions = window.comprehensiveQuizData || [];
+      const questions = [];
+
+      // Initialize quiz system
+      function initializeQuiz() {
+        console.log("Initializing quiz system...");
+
+        // Clean up any existing modal backdrops
+        cleanupModalBackdrops();
+
+        // Initialize modals
+        authModal = new bootstrap.Modal(
+          document.getElementById("authModal")
+        );
+        studentInfoModal = new bootstrap.Modal(
+          document.getElementById("studentInfoModal")
+        );
+
+        // Initialize authentication system
+        initAuthentication();
+
+        // Setup event listeners
+        setupEventListeners();
+      }
+
+      // Initialize authentication system
+      function initAuthentication() {
+        console.log("🔐 Initializing authentication...");
+        
+        // Initialize auth with callbacks
+        const cleanup = initAuth({
+          onAuthSuccess: (user) => {
+            console.log("✅ User authenticated:", user.displayName);
+            // Close auth modal if open
+            if (authModal) {
+              authModal.hide();
+            }
+            // Show student info modal
+            if (studentInfoModal) {
+              studentInfoModal.show();
+            }
+          },
+          onAuthFailure: () => {
+            console.log("❌ Authentication required");
+            // Show auth modal
+            if (authModal) {
+              authModal.show();
+            }
+          },
+          requireAuth: true,
+          showUserInfo: true
+        });
+        
+        return cleanup;
+      }
+
+      // Function to clean up modal backdrops
+      function cleanupModalBackdrops() {
+        // Remove any existing modal backdrops
+        const existingBackdrops = document.querySelectorAll(".modal-backdrop");
+        existingBackdrops.forEach((backdrop) => backdrop.remove());
+
+        // Remove modal-open class from body
+        document.body.classList.remove("modal-open");
+
+        // Reset body padding and overflow if they were modified
+        document.body.style.paddingRight = "";
+        document.body.style.overflow = "";
+
+        // Ensure body can scroll
+        document.body.style.overflowY = "auto";
+        document.body.style.overflowX = "hidden";
+      }
+
+      function setupEventListeners() {
+        // Authentication is now handled by auth.js
+
+        // Student info form
+        document
+          .getElementById("studentInfoForm")
+          .addEventListener("submit", handleStudentInfoSubmit);
+
+        // Real-time validation for student ID
+        document
+          .getElementById("studentId")
+          .addEventListener("input", function () {
+            const studentId = this.value.trim();
+            const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
+
+            if (studentId && !studentIdRegex.test(studentId)) {
+              this.classList.add("is-invalid");
+              this.setCustomValidity(
+                "Mã số sinh viên phải có định dạng S/s + chữ cái + 6 chữ số (ví dụ: SE123456, ss789012)"
+              );
+            } else {
+              this.classList.remove("is-invalid");
+              this.setCustomValidity("");
+            }
+          });
+
+        // Quiz navigation buttons
+        document
+          .getElementById("prevBtn")
+          .addEventListener("click", previousQuestion);
+        document
+          .getElementById("nextBtn")
+          .addEventListener("click", nextQuestion);
+        document
+          .getElementById("submitBtn")
+          .addEventListener("click", submitQuiz);
+        document
+          .getElementById("restartBtn")
+          .addEventListener("click", restartQuiz);
+      }
+
+      // Old password validation function removed - now using Google Sheets API
+
+      async function handleStudentInfoSubmit(e) {
+        e.preventDefault();
+        const studentId = document.getElementById("studentId").value.trim();
+        const studentName = document.getElementById("studentName").value.trim();
+
+        // Validate student ID format: S/s + letter + 6 digits
+        const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
+        if (!studentIdRegex.test(studentId)) {
+          // Show error message
+          const studentIdInput = document.getElementById("studentId");
+          studentIdInput.classList.add("is-invalid");
+          studentIdInput.setCustomValidity(
+            "Mã số sinh viên phải có định dạng S/s + chữ cái + 6 chữ số (ví dụ: SE123456, ss789012)"
+          );
+          studentIdInput.reportValidity();
+          return;
+        }
+
+        // Clear any previous validation errors
+        const studentIdInput = document.getElementById("studentId");
+        studentIdInput.classList.remove("is-invalid");
+        studentIdInput.setCustomValidity("");
+
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        const seconds = now.getSeconds().toString().padStart(2, "0");
+        const day = now.getDate().toString().padStart(2, "0");
+        const month = (now.getMonth() + 1).toString().padStart(2, "0");
+        const year = now.getFullYear();
+        const startTime = `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+
+        if (studentId && studentName) {
+          // Combine user info from Google Sheets with form data
+          studentInfo = {
+            id: studentId,
+            name: studentName,
+            startTime: startTime,
+          };
+
+          // Save to localStorage
+          localStorage.setItem("studentInfo", JSON.stringify(studentInfo));
+
+          // Update display
+          document.getElementById(
+            "studentDisplay"
+          ).textContent = `${studentName} (${studentId})`;
+
+          studentInfoModal.hide();
+
+          // Clean up modal backdrops after hiding
+          setTimeout(() => {
+            cleanupModalBackdrops();
+          }, 500);
+
+          // Additional cleanup to ensure scrolling works
+          setTimeout(() => {
+            // Force remove modal-open class and restore scrolling
+            document.body.classList.remove("modal-open");
+            document.body.style.overflowY = "auto";
+            document.body.style.overflowX = "hidden";
+          }, 1000);
+
+          // Load questions from Google Sheets first, then start quiz
+          setTimeout(async () => {
+            await loadQuestionsAndStartQuiz();
+          }, 300);
+        }
+      }
+
+      async function loadQuestionsAndStartQuiz() {
+        console.log("Loading questions and starting quiz...");
+
+        // Check if quiz elements exist
+        const questionText = document.getElementById("questionText");
+        const optionsContainer = document.getElementById("optionsContainer");
+
+        if (!questionText || !optionsContainer) {
+          console.error("Quiz elements not found");
+          return;
+        }
+
+        // Show loading state
+        questionText.textContent = "Đang tải câu hỏi từ cơ sở dữ liệu...";
+        optionsContainer.innerHTML =
+          '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="mt-2">Vui lòng chờ trong giây lát...</div></div>';
+
+        try {
+          // Try to get questions from Google Sheets API first
+          console.log("Fetching questions from Google Sheets...");
+          const apiQuestions = await getQuestionsFromSheet();
+
+          if (apiQuestions && apiQuestions.length > 0) {
+            console.log("Successfully loaded", apiQuestions.length);
+            window.quizQuestions = apiQuestions;
+          } else {
+            console.log(
+              "No questions from Google Sheets, using comprehensiveQuizData as fallback"
+            );
+            window.quizQuestions = window.comprehensiveQuizData || questions;
+          }
+        } catch (error) {
+          console.error("Error loading questions from Google Sheets:", error);
+          console.log("Using comprehensiveQuizData as fallback");
+          window.quizQuestions = window.comprehensiveQuizData || questions;
+        }
+
+        // Check if we have any questions at all
+        if (!window.quizQuestions || window.quizQuestions.length === 0) {
+          questionText.textContent =
+            "Không có câu hỏi nào để hiển thị. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.";
+          optionsContainer.innerHTML =
+            '<div class="alert alert-danger">Không thể tải câu hỏi từ cơ sở dữ liệu.</div>';
+          return;
+        }
+
+        console.log(
+          "Quiz questions loaded successfully:",
+          window.quizQuestions.length,
+          "questions"
+        );
+        // Update total questions display
+        document.getElementById("totalQuestions").textContent =
+          window.quizQuestions.length;
+        // Update total score text for results section
+        document.getElementById(
+          "totalScoreText"
+        ).textContent = `trên ${window.quizQuestions.length} điểm`;
+        // Start the quiz with loaded questions
+        startQuiz();
+      }
+
+      async function startQuiz() {
+        console.log("Starting quiz...");
+
+        // Check if quiz elements exist
+        const questionText = document.getElementById("questionText");
+        const optionsContainer = document.getElementById("optionsContainer");
+
+        if (!questionText || !optionsContainer) {
+          console.error("Quiz elements not found");
+          return;
+        }
+
+        // Check if questions are already loaded
+        if (!window.quizQuestions || window.quizQuestions.length === 0) {
+          questionText.textContent = "Không có câu hỏi nào để hiển thị.";
+          optionsContainer.innerHTML =
+            '<div class="alert alert-danger">Không có câu hỏi nào được tải.</div>';
+          return;
+        }
+
+        // Initialize quiz state
+        window.quizState = {
+          currentQuestion: 0,
+          answers: {},
+          score: 0,
+          startTime: Date.now(),
+          timer: null,
+          hintsUsed: 0,
+          questionTimer: null,
+        };
+
+        // Update total questions display
+        document.getElementById("totalQuestions").textContent =
+          window.quizQuestions.length;
+        // Update total score text for results section
+        document.getElementById(
+          "totalScoreText"
+        ).textContent = `trên ${window.quizQuestions.length} điểm`;
+
+        // Display first question
+        displayCurrentQuestion();
+        startQuizTimer();
+
+        // Ensure scrolling is enabled after quiz starts
+        setTimeout(() => {
+          document.body.classList.remove("modal-open");
+          document.body.style.overflowY = "auto";
+          document.body.style.overflowX = "hidden";
+        }, 100);
+      }
+
+      function displayCurrentQuestion() {
+        const state = window.quizState;
+        const questions = window.quizQuestions;
+
+        // Check if we have questions
+        if (!questions || questions.length === 0) {
+          console.error("No questions available");
+          document.getElementById("questionText").textContent =
+            "Không có câu hỏi nào để hiển thị.";
+          return;
+        }
+
+        const currentQ = questions[state.currentQuestion];
+
+        // Clear previous question timer
+        if (currentQuestionTimer) {
+          clearInterval(currentQuestionTimer);
+        }
+
+        // Update question text
+        document.getElementById("questionNumber").textContent =
+          state.currentQuestion + 1;
+        document.getElementById("questionText").textContent =
+          currentQ.question || "Câu hỏi không có nội dung";
+
+        // Create options
+        const container = document.getElementById("optionsContainer");
+        container.innerHTML = "";
+
+        // Check if options exist and is an array
+        if (
+          !currentQ.options ||
+          !Array.isArray(currentQ.options) ||
+          currentQ.options.length === 0
+        ) {
+          container.innerHTML =
+            '<div class="alert alert-warning">Câu hỏi này không có lựa chọn nào.</div>';
+          return;
+        }
+
+        currentQ.options.forEach((option, index) => {
+          const div = document.createElement("div");
+          div.className = "form-check option-item mb-3 clickable-option";
+          div.style.cursor = "pointer";
+          div.innerHTML = `
+                    <input class="form-check-input" type="radio" name="q${state.currentQuestion}" value="${index}" id="opt${index}">
+                    <label class="form-check-label w-100" for="opt${index}">${option}</label>
+                `;
+          container.appendChild(div);
+
+          // Add click handler for the entire option div
+          div.addEventListener("click", function(e) {
+            // Don't trigger if clicking directly on the radio input
+            if (e.target.type !== 'radio') {
+              const radio = div.querySelector("input");
+              radio.checked = true;
+              radio.dispatchEvent(new Event('change'));
+            }
+          });
+
+          // Add click handler
+          const radio = div.querySelector("input");
+          radio.addEventListener("change", function () {
+            if (this.checked) {
+              state.answers[state.currentQuestion] = parseInt(this.value);
+              document.getElementById("nextBtn").disabled = false;
+
+              // Clear question timer when answer is selected
+              if (currentQuestionTimer) {
+                clearInterval(currentQuestionTimer);
+                currentQuestionTimer = null;
+              }
+
+              // Show explanation if available
+              const explanationDiv = document.getElementById(
+                "explanationContainer"
+              );
+              const explanationText =
+                document.getElementById("explanationText");
+              if (explanationDiv && explanationText) {
+                if (currentQ.explanation) {
+                  explanationText.textContent = currentQ.explanation;
+                  explanationDiv.classList.remove("d-none");
+                } else {
+                  explanationDiv.classList.add("d-none");
+                }
+              }
+
+              // Check if correct answer is defined
+              if (
+                currentQ.correct !== undefined &&
+                parseInt(this.value) === currentQ.correct
+              ) {
+                if (explanationDiv)
+                  explanationDiv.className = "alert alert-success mt-3";
+                state.score++;
+              } else {
+                if (explanationDiv)
+                  explanationDiv.className = "alert alert-warning mt-3";
+              }
+
+              // Update score display
+              document.getElementById("currentScore").textContent = state.score;
+            }
+          });
+        });
+
+        // Update navigation
+        document.getElementById("prevBtn").disabled =
+          state.currentQuestion === 0;
+        document.getElementById("nextBtn").disabled = true;
+
+        // Hide containers
+        const hintContainer = document.getElementById("hintContainer");
+        const explanationContainer = document.getElementById(
+          "explanationContainer"
+        );
+        if (hintContainer) hintContainer.classList.add("d-none");
+        if (explanationContainer) explanationContainer.classList.add("d-none");
+
+        // Start question timer
+        startQuestionTimer();
+      }
+
+      function startQuestionTimer() {
+        let timeLeft = QUESTION_TIME_LIMIT;
+        const timerDisplay = document.getElementById("questionTimer");
+
+        timerDisplay.textContent = timeLeft;
+
+        currentQuestionTimer = setInterval(() => {
+          timeLeft--;
+          timerDisplay.textContent = timeLeft;
+
+          // Change color when time is running out
+          if (timeLeft <= 5) {
+            timerDisplay.style.color = "#dc3545";
+            timerDisplay.style.fontWeight = "bold";
+          } else {
+            timerDisplay.style.color = "";
+            timerDisplay.style.fontWeight = "";
+          }
+
+          if (timeLeft <= 0) {
+            clearInterval(currentQuestionTimer);
+            currentQuestionTimer = null;
+            // Auto move to next question
+            nextQuestion();
+          }
+        }, 1000);
+      }
+
+      function nextQuestion() {
+        const state = window.quizState;
+        const questions = window.quizQuestions;
+
+        if (state.currentQuestion < questions.length - 1) {
+          state.currentQuestion++;
+          displayCurrentQuestion();
+          updateProgressBar();
+        } else {
+          // End of quiz - show submit button instead of auto-submit
+          showSubmitButton();
+        }
+      }
+
+      function previousQuestion() {
+        const state = window.quizState;
+
+        if (state.currentQuestion > 0) {
+          state.currentQuestion--;
+          displayCurrentQuestion();
+          updateProgressBar();
+        }
+      }
+
+      function updateProgressBar() {
+        const state = window.quizState;
+        const questions = window.quizQuestions;
+        const progress = ((state.currentQuestion + 1) / questions.length) * 100;
+        document.getElementById("progressBar").style.width = `${progress}%`;
+      }
+
+      function showSubmitButton() {
+        // Hide quiz controls
+        document.getElementById("prevBtn").style.display = "none";
+        document.getElementById("nextBtn").style.display = "none";
+
+        // Show submit button
+        document.getElementById("submitBtn").style.display = "inline-block";
+
+        // Update progress bar to 100%
+        document.getElementById("progressBar").style.width = "100%";
+
+        // Show message that quiz is complete
+        const questionText = document.getElementById("questionText");
+        questionText.innerHTML = `
+          <div class="text-center">
+            <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+            <h5 class="mt-3 text-success">Hoàn thành bài kiểm tra!</h5>
+            <p class="text-muted">Bạn đã trả lời hết tất cả câu hỏi. Nhấn nút "Nộp bài" để xem kết quả.</p>
+          </div>
+        `;
+
+        // Hide options container
+        document.getElementById("optionsContainer").innerHTML = "";
+
+        // Hide hint and explanation containers
+        const hintContainer = document.getElementById("hintContainer");
+        const explanationContainer = document.getElementById(
+          "explanationContainer"
+        );
+        if (hintContainer) hintContainer.classList.add("d-none");
+        if (explanationContainer) explanationContainer.classList.add("d-none");
+
+        // Scroll to submit button with offset to ensure it's visible
+        setTimeout(() => {
+          const submitBtn = document.getElementById("submitBtn");
+          const rect = submitBtn.getBoundingClientRect();
+          const offset = 100; // Offset to ensure button is fully visible
+          window.scrollTo({
+            top: window.pageYOffset + rect.top - offset,
+            behavior: "smooth",
+          });
+        }, 100);
+      }
+
+      async function submitQuiz() {
+        // Show loading state on submit button
+        const submitBtn = document.getElementById("submitBtn");
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML =
+          '<i class="bi bi-hourglass-split me-2"></i>Đang xử lý...';
+        submitBtn.disabled = true;
+
+        // Clear timers and stop time
+        if (currentQuestionTimer) {
+          clearInterval(currentQuestionTimer);
+          currentQuestionTimer = null;
+        }
+        if (window.quizState.timer) {
+          clearInterval(window.quizState.timer);
+          window.quizState.timer = null;
+        }
+
+        const state = window.quizState;
+        const questions = window.quizQuestions;
+
+        // Calculate final results
+        const totalQuestions = questions.length;
+        const answeredCount = Object.keys(state.answers).length;
+        let correctCount = 0;
+
+        for (let questionIndex in state.answers) {
+          const userAnswer = state.answers[questionIndex];
+          const correctAnswer = questions[questionIndex].correct;
+          // Only count as correct if correct answer is defined
+          if (correctAnswer !== undefined && userAnswer === correctAnswer) {
+            correctCount++;
+          }
+        }
+
+        const incorrectCount = answeredCount - correctCount;
+        const skippedCount = totalQuestions - answeredCount;
+        const finalScore = correctCount;
+
+        // Calculate time spent in seconds
+        const timeSpentSeconds = Math.floor(
+          (Date.now() - state.startTime) / 1000
+        );
+
+        // Format completedAt as HH:mm:ss dd/MM/yyyy
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        const seconds = now.getSeconds().toString().padStart(2, "0");
+        const day = now.getDate().toString().padStart(2, "0");
+        const month = (now.getMonth() + 1).toString().padStart(2, "0");
+        const year = now.getFullYear();
+        const completedAt = `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+
+        // Save results to localStorage
+        const quizResult = {
+          studentInfo: studentInfo,
+          score: finalScore,
+          totalQuestions: totalQuestions,
+          correctAnswers: correctCount,
+          incorrectAnswers: incorrectCount,
+          skippedAnswers: skippedCount,
+          answers: state.answers,
+          completedAt: completedAt,
+          timeSpent: timeSpentSeconds,
+        };
+
+        // Get existing results or create new array
+        let allResults = JSON.parse(
+          localStorage.getItem("quizResults") || "[]"
+        );
+        allResults.push(quizResult);
+        localStorage.setItem("quizResults", JSON.stringify(allResults));
+
+        // Save result
+        if (studentInfo && studentInfo.id && studentInfo.name) {
+          try {
+            console.log("Saving result ...");
+
+            // Show saving status
+            const saveStatus = document.getElementById("saveStatus");
+            const saveStatusText = document.getElementById("saveStatusText");
+            if (saveStatus && saveStatusText) {
+              saveStatus.style.display = "block";
+              saveStatus.className = "alert alert-info mt-3";
+              saveStatusText.innerHTML =
+                '<i class="bi bi-hourglass-split me-2"></i>Đang lưu kết quả vào cơ sở dữ liệu...';
+            }
+
+            const resultData = {
+              mssv: studentInfo.id,
+              name: studentInfo.name,
+              startTime: studentInfo.startTime,
+              submitTime: completedAt,
+              timeSpent: timeSpentSeconds,
+              score: finalScore,
+            };
+
+            // Check if saveQuizResult function is available
+            if (typeof window.saveQuizResult !== "function") {
+              console.error("saveQuizResult function not available");
+              throw new Error("Save function not loaded");
+            }
+
+            const saveResult = await window.saveQuizResult(resultData);
+            if (saveResult.success) {
+              console.log("Result saved  successfully:", saveResult);
+              if (saveStatus && saveStatusText) {
+                saveStatus.className = "alert alert-success mt-3";
+                saveStatusText.innerHTML =
+                  '<i class="bi bi-check-circle me-2"></i>Kết quả đã được lưu thành công vào cơ sở dữ liệu!';
+              }
+            } else {
+              console.error("Failed to save result :", saveResult.error);
+              if (saveStatus && saveStatusText) {
+                if (saveResult.action === "duplicate_prevented") {
+                  saveStatus.className = "alert alert-danger mt-3";
+                  saveStatusText.innerHTML =
+                    '<i class="bi bi-exclamation-triangle me-2"></i>' +
+                    saveResult.error;
+                } else {
+                  saveStatus.className = "alert alert-warning mt-3";
+                  saveStatusText.innerHTML =
+                    '<i class="bi bi-exclamation-triangle me-2"></i>Không thể lưu vào cơ sở dữ liệu, nhưng kết quả đã được lưu cục bộ.';
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Error saving result :", error);
+            if (saveStatus && saveStatusText) {
+              saveStatus.className = "alert alert-warning mt-3";
+              saveStatusText.innerHTML =
+                '<i class="bi bi-exclamation-triangle me-2"></i>Không thể lưu vào cơ sở dữ liệu, nhưng kết quả đã được lưu cục bộ.';
+            }
+          } finally {
+            // Reset submit button after saving attempt
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        } else {
+          console.warn("Cannot save : missing student info");
+          // Reset submit button if no student info
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }
+
+        // Show results
+        showResults(
+          finalScore,
+          correctCount,
+          incorrectCount,
+          skippedCount,
+          timeSpentSeconds
+        );
+      }
+
+      function showResults(
+        finalScore,
+        correctCount,
+        incorrectCount,
+        skippedCount,
+        timeSpentSeconds
+      ) {
+        // Hide quiz section
+        document.querySelector(".container").style.display = "none";
+        document.getElementById("resultsSection").classList.remove("d-none");
+
+        // Update result displays
+        document.getElementById("finalScore").textContent = finalScore;
+        document.getElementById("correctAnswers").textContent = correctCount;
+        document.getElementById("incorrectAnswers").textContent =
+          incorrectCount;
+        document.getElementById("skippedAnswers").textContent = skippedCount;
+
+        // Format and display time spent
+        const minutes = Math.floor(timeSpentSeconds / 60);
+        const seconds = timeSpentSeconds % 60;
+        const timeSpentFormatted = `${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        document.getElementById("timeSpentDisplay").textContent =
+          timeSpentFormatted;
+
+        // Show performance message
+        let message = "";
+        if (finalScore >= 16) {
+          message = "🎉 Xuất sắc! Bạn hiểu rất rõ về Tư tưởng Hồ Chí Minh!";
+        } else if (finalScore >= 12) {
+          message = "👍 Tốt! Bạn có kiến thức khá tốt về chủ đề này.";
+        } else if (finalScore >= 8) {
+          message = "📚 Khá! Hãy ôn tập thêm để nắm vững hơn.";
+        } else {
+          message = "💪 Cần cố gắng thêm! Hãy học thêm và thử lại.";
+        }
+
+        document.getElementById("finalMessage").textContent = message;
+
+        // Display question review
+        displayQuestionReview();
+
+        // Scroll to results
+        document
+          .getElementById("resultsSection")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function displayQuestionReview() {
+        const state = window.quizState;
+        const questions = window.quizQuestions;
+        const reviewContainer = document.getElementById("questionReviewList");
+
+        if (!reviewContainer || !questions) {
+          console.error("Review container or questions not found");
+          return;
+        }
+
+        reviewContainer.innerHTML = "";
+
+        questions.forEach((question, index) => {
+          const userAnswer = state.answers[index];
+          const correctAnswer = question.correct;
+          const isCorrect = userAnswer === correctAnswer;
+
+          // Create question card
+          const questionCard = document.createElement("div");
+          questionCard.className = `card mb-3 ${
+            isCorrect ? "border-success" : "border-danger"
+          }`;
+
+          // Question header
+          const cardHeader = document.createElement("div");
+          cardHeader.className = `card-header ${
+            isCorrect ? "bg-success text-white" : "bg-danger text-white"
+          }`;
+          cardHeader.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">
+                <i class="bi bi-question-circle me-2"></i>
+                Câu ${index + 1}
+              </h6>
+              <span class="badge ${
+                isCorrect ? "bg-light text-success" : "bg-light text-danger"
+              }">
+                <i class="bi ${
+                  isCorrect ? "bi-check-circle" : "bi-x-circle"
+                } me-1"></i>
+                ${isCorrect ? "Đúng" : "Sai"}
+              </span>
+            </div>
+          `;
+
+          // Question body
+          const cardBody = document.createElement("div");
+          cardBody.className = "card-body";
+
+          // Question text
+          const questionText = document.createElement("h6");
+          questionText.className = "mb-3";
+          questionText.textContent = question.question;
+
+          // Options
+          const optionsContainer = document.createElement("div");
+          optionsContainer.className = "mb-3";
+
+          if (question.options && Array.isArray(question.options)) {
+            question.options.forEach((option, optionIndex) => {
+              const optionDiv = document.createElement("div");
+              optionDiv.className = "form-check mb-2";
+
+              let optionClass = "";
+              let icon = "";
+
+              if (optionIndex === correctAnswer) {
+                optionClass = "text-success fw-bold";
+                icon = '<i class="bi bi-check-circle-fill me-2"></i>';
+              } else if (
+                optionIndex === userAnswer &&
+                userAnswer !== correctAnswer
+              ) {
+                optionClass = "text-danger fw-bold";
+                icon = '<i class="bi bi-x-circle-fill me-2"></i>';
+              } else {
+                optionClass = "text-muted";
+                icon = '<i class="bi bi-circle me-2"></i>';
+              }
+
+              optionDiv.innerHTML = `
+                <div class="${optionClass}">
+                  ${icon}${option}
+                  ${optionIndex === correctAnswer ? " (Đáp án đúng)" : ""}
+                  ${
+                    optionIndex === userAnswer && userAnswer !== correctAnswer
+                      ? " (Bạn đã chọn)"
+                      : ""
+                  }
+                </div>
+              `;
+
+              optionsContainer.appendChild(optionDiv);
+            });
+          }
+
+          // Explanation
+          let explanationDiv = "";
+          if (question.explanation) {
+            explanationDiv = `
+              <div class="alert alert-info mt-3">
+                <h6><i class="bi bi-lightbulb me-2"></i>Giải thích:</h6>
+                <p class="mb-0">${question.explanation}</p>
+              </div>
+            `;
+          }
+
+          cardBody.innerHTML = `
+            ${questionText.outerHTML}
+            ${optionsContainer.outerHTML}
+            ${explanationDiv}
+          `;
+
+          questionCard.appendChild(cardHeader);
+          questionCard.appendChild(cardBody);
+          reviewContainer.appendChild(questionCard);
+        });
+      }
+
+      async function restartQuiz() {
+        // Clear existing timers
+        if (currentQuestionTimer) {
+          clearInterval(currentQuestionTimer);
+        }
+        if (window.quizState && window.quizState.timer) {
+          clearInterval(window.quizState.timer);
+        }
+
+        // Show quiz, hide results
+        document.querySelector(".container").style.display = "block";
+        document.getElementById("resultsSection").classList.add("d-none");
+
+        // Reset display elements
+        document.getElementById("currentScore").textContent = "0";
+
+        // Reload questions and restart quiz
+        await loadQuestionsAndStartQuiz();
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function startQuizTimer() {
+        window.quizState.timer = setInterval(function () {
+          const elapsed = Math.floor(
+            (Date.now() - window.quizState.startTime) / 1000
+          );
+          const minutes = Math.floor(elapsed / 60);
+          const seconds = elapsed % 60;
+          document.getElementById("timeSpent").textContent = `${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+        }, 1000);
+      }
+
+      // Initialize when DOM loads
+      document.addEventListener("DOMContentLoaded", async function () {
+        console.log("DOM loaded, initializing quiz system...");
+
+        // Wait for authentication system to load
+        await new Promise(resolve => {
+          if (typeof initAuth === 'function') {
+            resolve();
+          } else {
+            const checkAuth = setInterval(() => {
+              if (typeof initAuth === 'function') {
+                clearInterval(checkAuth);
+                resolve();
+              }
+            }, 100);
+          }
+        });
+
+        // Check if required functions are loaded
+        console.log("Checking loaded functions...");
+        console.log(
+          "saveQuizResult available:",
+          typeof window.saveQuizResult === "function"
+        );
+        console.log(
+          "getQuestionsFromSheet available:",
+          typeof window.getQuestionsFromSheet === "function"
+        );
+        console.log(
+          "handlePasswordCheck available:",
+          typeof window.handlePasswordCheck === "function"
+        );
+
+        // Wait for comprehensiveQuizData to be available as fallback
+        if (!window.comprehensiveQuizData) {
+          console.log("Waiting for comprehensiveQuizData to load...");
+          setTimeout(() => {
+            if (!window.comprehensiveQuizData) {
+              console.warn(
+                "comprehensiveQuizData not available, using empty array"
+              );
+              window.comprehensiveQuizData = [];
+            }
+          }, 1000);
+        }
+
+        // Clear all localStorage data when starting
+        localStorage.clear();
+        console.log("Cleared all localStorage data");
+
+        // Clean up any existing modal backdrops on page load
+        cleanupModalBackdrops();
+
+        // Always start with password check
+        console.log("Starting with password check...");
+        setTimeout(() => {
+          initializeQuiz();
+        }, 500);
+      });
+    </script>
+  </body>
+</html>

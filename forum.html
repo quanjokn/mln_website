@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diễn đàn - Tư Tưởng Hồ Chí Minh</title>
+    <link rel="icon" type="image/x-icon" href="./pic/icons8-book-16.png" />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav
+      class="navbar navbar-expand-lg navbar-dark bg-dark-custom fixed-top"
+      data-aos="fade-down"
+    >
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">
+          <i class="bi bi-book-half me-2"></i>
+          Tư Tưởng Hồ Chí Minh
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">
+                <i class="bi bi-house-door me-1"></i>Trang chủ
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="quizz.html">
+                <i class="bi bi-question-circle me-1"></i>Kiểm tra
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="forum.html">
+                <i class="bi bi-chat-dots me-1"></i>Diễn đàn
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="chatbox.html">
+                <i class="bi bi-robot"></i>Chat AI
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Forum Header -->
+    <header class="forum-header bg-classical text-white py-5 mt-5">
+      <div class="container" data-aos="fade-up">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <h1 class="display-4 mb-3">
+              <i class="bi bi-chat-dots me-3"></i>Diễn đàn thảo luận
+            </h1>
+            <p class="lead mb-0">
+              Chia sẻ, học hỏi và thảo luận về Tư tưởng Hồ Chí Minh
+            </p>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <div id="userAuthSection">
+              <!-- User auth buttons will be inserted here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="py-4">
+      <div class="container">
+        <!-- Forum Guidelines Notice -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div
+              class="alert alert-info border-0 shadow-sm"
+              data-aos="fade-up"
+              style="
+                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                border-left: 4px solid #1976d2;
+              "
+            >
+              <div class="d-flex align-items-start">
+                <div class="me-3">
+                  <i class="bi bi-info-circle-fill text-primary fs-4"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="alert-heading mb-2 text-primary">
+                    <i class="bi bi-megaphone me-2"></i>Thông báo quan trọng về
+                    diễn đàn
+                  </h6>
+                  <p class="mb-2">
+                    Đây là
+                    <strong>diễn đàn bàn luận về Tư tưởng Hồ Chí Minh</strong> -
+                    một không gian học thuật thiêng liêng và trang trọng. Kính
+                    mong các bạn:
+                  </p>
+                  <ul class="mb-2 small">
+                    <li>
+                      <strong>Tôn trọng</strong> tư tưởng và di sản tinh thần
+                      của Chủ tịch Hồ Chí Minh
+                    </li>
+                    <li>
+                      <strong>Thảo luận văn minh</strong>, mang tính xây dựng và
+                      có căn cứ khoa học
+                    </li>
+                    <li>
+                      <strong>Chia sẻ</strong> những hiểu biết, trải nghiệm thực
+                      tiễn về tư tưởng Hồ Chí Minh
+                    </li>
+                    <li>
+                      <strong>Góp phần</strong> làm phong phú thêm kho tàng tri
+                      thức về vị lãnh tụ vĩ đại
+                    </li>
+                  </ul>
+                  <p class="mb-0 small text-muted">
+                    <i class="bi bi-heart text-danger me-1"></i>
+                    <em
+                      >"Không có gì quý hơn độc lập tự do" - Hãy cùng nhau học
+                      tập và phát huy những giá trị cao đẹp này!</em
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forum Stats -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm" data-aos="fade-up">
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-md-3">
+                    <div class="forum-stat">
+                      <i class="bi bi-file-text text-classical fs-2"></i>
+                      <h4 id="totalTopics" class="mt-2 mb-0">0</h4>
+                      <small class="text-muted">Chủ đề</small>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="forum-stat">
+                      <i class="bi bi-chat-left-text text-classical fs-2"></i>
+                      <h4 id="totalReplies" class="mt-2 mb-0">0</h4>
+                      <small class="text-muted">Bình luận</small>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="forum-stat">
+                      <i class="bi bi-people text-classical fs-2"></i>
+                      <h4 id="totalUsers" class="mt-2 mb-0">0</h4>
+                      <small class="text-muted">Thành viên</small>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="forum-stat">
+                      <i class="bi bi-clock text-classical fs-2"></i>
+                      <h4 id="onlineUsers" class="mt-2 mb-0">0</h4>
+                      <small class="text-muted">Đang online</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories Section -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <h3 class="mb-3" data-aos="fade-up">
+              <i class="bi bi-grid-3x3-gap me-2"></i>Danh mục thảo luận
+            </h3>
+            <div class="row" id="categoriesContainer">
+              <!-- Categories will be loaded here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+          <div class="col-lg-8">
+            <div class="d-flex gap-2 flex-wrap">
+              <button class="btn btn-classical" onclick="showAllTopics()">
+                <i class="bi bi-list-ul me-1"></i>Tất cả chủ đề
+              </button>
+              <button
+                class="btn btn-outline-classical"
+                onclick="filterByCategory('hot')"
+              >
+                <i class="bi bi-fire me-1"></i>Thảo luận hot
+              </button>
+              <button
+                class="btn btn-outline-classical"
+                onclick="filterByCategory('new')"
+              >
+                <i class="bi bi-clock-history me-1"></i>Mới nhất
+              </button>
+              <button
+                class="btn btn-outline-classical"
+                onclick="filterByCategory('unanswered')"
+              >
+                <i class="bi bi-question-circle me-1"></i>Chưa trả lời
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-4 text-lg-end">
+            <button
+              class="btn btn-success"
+              onclick="showCreateTopicModal()"
+              id="createTopicBtn"
+              style="display: none"
+            >
+              <i class="bi bi-plus-circle me-1"></i>Tạo chủ đề mới
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="row mb-4">
+          <div class="col-lg-6">
+            <div class="input-group" data-aos="fade-up">
+              <span class="input-group-text">
+                <i class="bi bi-search"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Tìm kiếm chủ đề thảo luận..."
+                id="searchInput"
+                onkeyup="searchTopics()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Topics List -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card border-0 shadow-sm" data-aos="fade-up">
+              <div class="card-header bg-light-classical">
+                <h5 class="mb-0">
+                  <i class="bi bi-chat-left-text me-2"></i>Danh sách thảo luận
+                </h5>
+              </div>
+              <div class="card-body p-0">
+                <div id="topicsContainer">
+                  <!-- Topics will be loaded here -->
+                  <div class="text-center py-5">
+                    <div class="spinner-border text-classical" role="status">
+                      <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">
+                      Đang tải danh sách thảo luận...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Create Topic Modal -->
+    <div class="modal fade" id="createTopicModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-classical text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-plus-circle me-2"></i>Tạo chủ đề thảo luận mới
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="createTopicForm">
+              <div class="mb-3">
+                <label for="topicTitle" class="form-label"
+                  >Tiêu đề chủ đề *</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="topicTitle"
+                  placeholder="Nhập tiêu đề chủ đề..."
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="topicCategory" class="form-label">Danh mục *</label>
+                <select class="form-select" id="topicCategory" required>
+                  <option value="">Chọn danh mục...</option>
+                  <option value="tu-tuong-yeu-nuoc">Tư tưởng yêu nước</option>
+                  <option value="dao-duc-hcm">Đạo đức Hồ Chí Minh</option>
+                  <option value="ung-dung-thuc-te">Ứng dụng thực tế</option>
+                  <option value="cau-hoi-giai-dap">Câu hỏi & Giải đáp</option>
+                  <option value="tai-lieu-chia-se">Tài liệu chia sẻ</option>
+                  <option value="su-kien-hoat-dong">Sự kiện & Hoạt động</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="topicContent" class="form-label">Nội dung *</label>
+                <textarea
+                  class="form-control"
+                  id="topicContent"
+                  rows="8"
+                  placeholder="Chia sẻ suy nghĩ, câu hỏi hoặc ý kiến của bạn..."
+                  required
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="topicPinned"
+                  />
+                  <label class="form-check-label" for="topicPinned">
+                    Ghim chủ đề này (chỉ dành cho quản trị viên)
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle me-1"></i>Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-classical"
+              onclick="createTopic()"
+            >
+              <i class="bi bi-send me-1"></i>Đăng chủ đề
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic Detail Modal -->
+    <div class="modal fade" id="topicDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header bg-light-classical">
+            <h5 class="modal-title" id="topicDetailTitle">
+              <!-- Topic title will be inserted here -->
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body" style="max-height: 70vh; overflow-y: auto">
+            <div id="topicDetailContent">
+              <!-- Topic content and replies will be loaded here -->
+            </div>
+          </div>
+          <div class="modal-footer" id="topicDetailFooter">
+            <!-- Reply form will be inserted here for authenticated users -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-classical text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body text-center py-4">
+            <p class="mb-4">Đăng nhập để tham gia thảo luận cùng cộng đồng</p>
+            <button class="btn btn-danger btn-lg" onclick="signInWithGoogle()">
+              <i class="bi bi-google me-2"></i>Đăng nhập với Google
+            </button>
+            <p class="mt-3 small text-muted">
+              Bằng việc đăng nhập, bạn đồng ý tuân thủ quy tắc diễn đàn
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="bg-dark-classical text-light py-5 mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3">
+            <h6 class="mb-3">
+              <i class="bi bi-chat-dots me-2"></i>Diễn đàn bàn luận về Tư tưởng
+              Hồ Chí Minh
+            </h6>
+            <p class="small mb-3">
+              Nơi chia sẻ, học hỏi và thảo luận về Tư tưởng Hồ Chí Minh trong
+              môi trường học thuật chuyên nghiệp.
+            </p>
+            <div class="social-links">
+              <a href="#" class="text-light me-3" title="Facebook">
+                <i class="bi bi-facebook fs-5"></i>
+              </a>
+              <a href="#" class="text-light me-3" title="YouTube">
+                <i class="bi bi-youtube fs-5"></i>
+              </a>
+              <a href="#" class="text-light me-3" title="Email">
+                <i class="bi bi-envelope fs-5"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <h6 class="mb-3">
+              <i class="bi bi-shield-check me-2"></i>Quy tắc diễn đàn
+            </h6>
+            <ul class="list-unstyled small">
+              <li class="mb-1">
+                <i class="bi bi-check-circle me-1 text-success"></i>Thảo luận
+                lịch sự, tôn trọng
+              </li>
+              <li class="mb-1">
+                <i class="bi bi-check-circle me-1 text-success"></i>Nội dung
+                liên quan đến chủ đề
+              </li>
+              <li class="mb-1">
+                <i class="bi bi-check-circle me-1 text-success"></i>Không spam,
+                quảng cáo
+              </li>
+              <li class="mb-1">
+                <i class="bi bi-check-circle me-1 text-success"></i>Sử dụng ngôn
+                ngữ văn minh
+              </li>
+              <li class="mb-1">
+                <i class="bi bi-check-circle me-1 text-success"></i>Bảo mật
+                thông tin cá nhân
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-3">
+            <h6 class="mb-3">
+              <i class="bi bi-link-45deg me-2"></i>Liên kết hữu ích
+            </h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2">
+                <a href="index.html" class="text-light text-decoration-none">
+                  <i class="bi bi-house me-1"></i>Trang chủ
+                </a>
+              </li>
+              <li class="mb-2">
+                <a href="quizz.html" class="text-light text-decoration-none">
+                  <i class="bi bi-question-circle me-1"></i>Bài kiểm tra
+                </a>
+              </li>
+              <li class="mb-2">
+                <a
+                  href="nha-nuoc-phap-luat.html"
+                  class="text-light text-decoration-none"
+                >
+                  <i class="bi bi-building me-1"></i>Nhà nước & Pháp luật
+                </a>
+              </li>
+              <li class="mb-2">
+                <a
+                  href="https://fpt.edu.vn"
+                  class="text-light text-decoration-none"
+                  target="_blank"
+                >
+                  <i class="bi bi-mortarboard me-1"></i>FPT University
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="col-md-3">
+            <h6 class="mb-3">
+              <i class="bi bi-info-circle me-2"></i>Thông tin liên hệ
+            </h6>
+            <ul class="list-unstyled small">
+              <li class="mb-2">
+                <i class="bi bi-geo-alt me-1 text-warning"></i>
+                FPT University - Hồ Chí Minh
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-envelope me-1 text-warning"></i>
+                buitrongtri2004@gmail.com
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-telephone me-1 text-warning"></i>
+                0372899192
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-clock me-1 text-warning"></i>
+                T2-T6: 8:00 - 17:00
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="my-4 border-light opacity-25" />
+
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <p class="mb-0 small">
+              &copy; 2025 <strong>Tư tưởng Hồ Chí Minh - MLN111</strong>.
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <p class="mb-0 small">
+              <i class="bi bi-code-slash me-1" style="color: white"></i>Phát
+              triển bởi sinh viên thuộc đại học FPT
+              <span class="mx-2">|</span>
+              <i class="bi bi-heart-fill text-danger me-1"></i>Made with passion
+            </p>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col-12 text-center">
+            <p class="mb-0 small">
+              <em>"Đạo đức là gốc, tài năng là ngọn" - Hồ Chí Minh</em>
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <!-- Firebase Authentication -->
+    <script type="module" src="auth.js"></script>
+    <!-- Firebase v9 SDK -->
+    <script type="module" src="forum.js"></script>
+
+    <script>
+      // Initialize AOS
+      AOS.init({
+        duration: 800,
+        once: true,
+      });
+    </script>
+  </body>
+</html>
