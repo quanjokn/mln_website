@@ -535,20 +535,26 @@
 
       // Function to clean up modal backdrops
       function cleanupModalBackdrops() {
+        console.log("🧹 Cleaning up modal backdrops...");
+        
         // Remove any existing modal backdrops
         const existingBackdrops = document.querySelectorAll(".modal-backdrop");
-        existingBackdrops.forEach((backdrop) => backdrop.remove());
+        console.log(`Found ${existingBackdrops.length} modal backdrops to remove`);
+        existingBackdrops.forEach((backdrop) => {
+          backdrop.remove();
+          console.log("✅ Removed modal backdrop");
+        });
 
         // Remove modal-open class from body
         document.body.classList.remove("modal-open");
+        console.log("✅ Removed modal-open class from body");
 
         // Reset body padding and overflow if they were modified
         document.body.style.paddingRight = "";
         document.body.style.overflow = "";
-
-        // Ensure body can scroll
         document.body.style.overflowY = "auto";
         document.body.style.overflowX = "hidden";
+        console.log("✅ Reset body styles");
       }
 
       function setupEventListeners() {
@@ -596,8 +602,13 @@
 
       async function handleStudentInfoSubmit(e) {
         e.preventDefault();
+        console.log("🔄 Handling student info submit...");
+        
         const studentId = document.getElementById("studentId").value.trim();
         const studentName = document.getElementById("studentName").value.trim();
+        
+        console.log("Student ID:", studentId);
+        console.log("Student Name:", studentName);
 
         // Validate student ID format: S/s + letter + 6 digits
         const studentIdRegex = /^[Ss][a-zA-Z]\d{6}$/;
@@ -627,6 +638,8 @@
         const startTime = `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
 
         if (studentId && studentName) {
+          console.log("✅ Student info validated, proceeding...");
+          
           // Combine user info from Google Sheets with form data
           studentInfo = {
             id: studentId,
@@ -636,13 +649,34 @@
 
           // Save to localStorage
           localStorage.setItem("studentInfo", JSON.stringify(studentInfo));
+          console.log("💾 Student info saved to localStorage");
 
           // Update display
           document.getElementById(
             "studentDisplay"
           ).textContent = `${studentName} (${studentId})`;
+          console.log("📝 Student display updated");
 
-          studentInfoModal.hide();
+          // Hide modal using Bootstrap instance
+          console.log("🚪 Attempting to hide modal...");
+          const modalInstance = bootstrap.Modal.getInstance(document.getElementById("studentInfoModal"));
+          if (modalInstance) {
+            console.log("✅ Using Bootstrap modal instance to hide");
+            modalInstance.hide();
+          } else {
+            console.log("⚠️ No modal instance found, using fallback");
+            // Fallback: Hide modal manually
+            const modalElement = document.getElementById("studentInfoModal");
+            if (modalElement) {
+              modalElement.classList.remove("show");
+              modalElement.style.display = "none";
+              modalElement.setAttribute("aria-hidden", "true");
+              modalElement.removeAttribute("aria-modal");
+              console.log("✅ Modal hidden using fallback method");
+            } else {
+              console.log("❌ Modal element not found!");
+            }
+          }
 
           // Clean up modal backdrops after hiding
           setTimeout(() => {
@@ -658,9 +692,13 @@
           }, 1000);
 
           // Load questions from Google Sheets first, then start quiz
+          console.log("⏳ Scheduling quiz start in 300ms...");
           setTimeout(async () => {
+            console.log("🚀 Starting quiz...");
             await loadQuestionsAndStartQuiz();
           }, 300);
+        } else {
+          console.log("❌ Missing student ID or name");
         }
       }
 
